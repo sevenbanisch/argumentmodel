@@ -29,7 +29,7 @@ def expected_change_in_opinion(M, beta, att_sender, att_receiver):
     :return: list of expected attitude change for all receivers based on their respective sender
     """
 
-   # prefactor correcting possible strength of attitude adoption
+    # Prefactor correcting possible strength of attitude adoption
     prefactor = (1/(2*M))
     diff_in_att = att_sender - att_receiver
     tan_hyp = np.tanh(att_receiver * beta * 0.5)
@@ -86,28 +86,22 @@ def simulate_agent_interaction(no_of_agents, no_of_iterations, M, beta, SyPaAn):
 
     # Only if we are not conduction a Systematic Parameter Analysis will we need these lists
     if not SyPaAn:
-        list_of_attitude_lists = []
+        matrix_attitudes = np.zeros((no_of_agents, no_of_iterations))
 
     # initiates the agents
     agents_att = initiate_agents(no_of_agents)
-
-    agents_midpoint = int(no_of_agents/2)
-
     agent_indices = np.arange(0, no_of_agents)
 
-    #simulates a single iteration
+    # simulates a single iteration
     for interaction in range(no_of_iterations):
 
         np.random.shuffle(agent_indices)
-
         agents_att = single_interaction(agents_att, agent_indices, beta, M)
-
 
         # data about the simulation run is collected and stored for later analysis. It is only stored after a
         # "Macro-iteration", meaning after no_of_agents iteration.
         if not SyPaAn:
-
-            list_of_attitude_lists.append(agents_att.copy())
+            matrix_attitudes[:, interaction] = agents_att.reshape((len(agents_att),))
 
     # if a Systematic Parameter Analysis is performed, only the state of the agents
     # after the last iteration is of concern
@@ -116,5 +110,6 @@ def simulate_agent_interaction(no_of_agents, no_of_iterations, M, beta, SyPaAn):
         # returns the attitude at the end of the model simulation and the indexes of agents in the group
         return agents_att.copy()
 
-    # returns the list of attitudes for each iteration, the list of evaluations for each iteration and the indexes of the agents in the group
-    return list_of_attitude_lists
+    # returns the list of attitudes for each iteration, the list of evaluations for each iteration and
+    # the indexes of the agents in the group
+    return matrix_attitudes

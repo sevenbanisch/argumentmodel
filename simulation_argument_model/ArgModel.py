@@ -13,7 +13,7 @@ def initiate_agents(no_agents, no_arguments):
     :return: no_agents x no_arguments matrix filled with boolean evaluations of the arguments
     """
 
-    agent_eval = np.reshape(np.random.randint(0, 2,no_agents* no_arguments), (no_agents, no_arguments)).astype(np.float64)
+    agent_eval = np.reshape(np.random.randint(0, 2, no_agents * no_arguments), (no_agents, no_arguments)).astype(np.float64)
 
     return agent_eval
 
@@ -27,7 +27,7 @@ def calculate_attitude_of_agents(agents, C):
     :param C: Connection matrix
     :return: matrix with attitudes for all agents
     """
-    return np.dot(agents, C.transpose())
+    return agents @ C.transpose()
 
 
 @jit(nopython=True)
@@ -39,7 +39,7 @@ def p_beta_diff(beta, coherence_diff):
     :param coherence_diff: difference in coherence before and after argument adoption for each receiver
     :return: probability of argument acceptance for each receiver
     """
-    res = 1/(1+np.exp(beta * (coherence_diff)))
+    res = 1/(1+np.exp(beta * coherence_diff))
     return res
 
 
@@ -137,14 +137,9 @@ def simulate_agent_interaction(no_of_agents, no_of_iterations, beta, C, SyPaAn):
     :param SyPaAn: Bool indicating wether to return data for more than one iteration or only for the end of a model run
     :return:
         loal: list of attitude distribution throughout the iterations
-        lovl: list of evaluation distributions throughout the iterations
+        # lovl: list of evaluation distributions throughout the iterations
 
     """
-
-    # Only if we are not conduction a Systematic Parameter Analysis will we need these lists
-    if not SyPaAn:
-        list_of_attitude_lists = []
-        list_of_eval_lists = []
 
     # initiates the agents
     agents_eval = initiate_agents(no_of_agents, C.shape[1])
@@ -156,7 +151,11 @@ def simulate_agent_interaction(no_of_agents, no_of_iterations, beta, C, SyPaAn):
 
     agent_indices = np.arange(0, no_of_agents)
 
-    #simulates a single iteration
+    # Only if we are not conduction a Systematic Parameter Analysis will we need these lists
+    if not SyPaAn:
+        matrix_attitudes = np.zeros((no_of_agents, no_of_iterations))
+
+    # simulates a single iteration
     for interaction in range(no_of_iterations):
 
         np.random.shuffle(agent_indices)
@@ -171,8 +170,7 @@ def simulate_agent_interaction(no_of_agents, no_of_iterations, beta, C, SyPaAn):
         # data about the simulation run is collected and stored for later analysis. It is only stored after a
         # "Macro-iteration", meaning after no_of_agents iteration.
         if not SyPaAn:
-            list_of_eval_lists.append(agents_eval.copy())
-            list_of_attitude_lists.append(agents_att.copy())
+            matrix_attitudes[:, interaction] = agents_att.reshape((len(agents_att),))
 
     # if a Systematic Parameter Analysis is performed, only the state of the agents
     # after the last iteration is of concern
@@ -181,4 +179,5 @@ def simulate_agent_interaction(no_of_agents, no_of_iterations, beta, C, SyPaAn):
         return agents_att.copy()
 
     # returns the list of attitudes for each iteration, the list of evaluations for each iteration and the indexes of the agents in the group
-    return list_of_attitude_lists, list_of_eval_lists
+    return matrix_attitudes
+    #return list_of_attitude_lists # , list_of_eval_lists

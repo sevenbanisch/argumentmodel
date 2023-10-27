@@ -2,10 +2,109 @@
 import numpy as np
 from sklearn.metrics import pairwise_distances
 import scipy.spatial.distance as ssd
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 
-# counts number of times an opinion within a given intervall occurs in a list of opinions
+def plot_iterations_DEPRECATED(opinions_over_time, no_of_bins, lmts):
+    """
+    DEPRECATED
+    Convert a list of an array into a list of histograms
+
+    :param opinions_over_time: list of opinion distributions
+    :param no_of_bins: Number of bins for hist weight calculation
+    :param lmts: boundaries for hist calculation
+    :return: list of histogram weights and the extent of the calculated data
+    """
+
+    # sets the upper and lower limits for the y-axis
+    spread = np.floor(lmts[1])-np.ceil(lmts[0])
+
+    stepsize = spread/no_of_bins
+
+    # to show the data in a 2d heatmap, they are written into a 2d array
+    data_in_proper_form = np.zeros((no_of_bins, len(opinions_over_time)))
+    hel = len(data_in_proper_form)
+
+    #restructuring data to allow for the heatmap to be generated
+    for i in range(len(opinions_over_time)):
+        for j in range(hel):
+            data_in_proper_form[j][i] = count_no_of_occurence_in_intervall(np.ceil(lmts[0]), (np.floor(lmts[1]))-stepsize*(j+1), (np.floor(lmts[1]))-stepsize*j,
+                                                                              opinions_over_time[i])
+
+    return data_in_proper_form, [0 , len(opinions_over_time), lmts[0] , lmts[1]]
+
+
+def two_d_histogramm_single_simulation(matr, NO_OF_BINS, C):
+    """
+    Create a single plot that shows the change in attitude distribution over time with the use of histograms.
+
+    :param matr: 2d matrix containing an attitude distribution for each iteration (iterations are the columns)
+    :param NO_OF_BINS: Number of bins that will be used for calculating the histogram weights
+    :param C: either a connection matrix (normal ArgModel) or the number of implicitly modelled arguments (reduced ArgModel)
+    :return: Nothing, but a matplotlib plot is shown
+    """
+
+    # set size of final plot
+    fig = plt.figure(figsize=(15,3))
+    fontsize = 8
+
+    # calulates the maximal and minimal possible attitude based on C
+    if type(C) is int:
+        no_modelled_args_per_side = C
+        lims = np.array([[-no_modelled_args_per_side,no_modelled_args_per_side]])
+    else:
+        lims = calc_min_max_atts(C)
+
+    cmap_out_group = mpl.cm.Reds
+    cmap_out_group.set_under(color='white')
+
+    # creates the first subplot which shows the distribution of attitudes.
+    if type(C) is int:
+        matr = no_modelled_args_per_side * matr
+
+    data = distr_to_2d_histogram(matr, NO_OF_BINS, lims[0,:])
+    extent = [0, data.shape[1], lims[0,0], lims[0,1]]
+
+    plt.imshow(data, extent = extent, cmap=cmap_out_group, interpolation='None', aspect='auto', vmin=0.001)
+    plt.title(f"Distribution over time", fontsize=fontsize)
+    plt.ylabel("Attitude")
+    plt.xlabel("Time in Iterations")
+    plt.grid(visible=True, axis='both', color='black', alpha=0.3)
+    plt.tick_params(axis="x", labelsize=fontsize)
+
+
+def distr_to_2d_histogram(matr, no_of_bins, lims):
+    """
+    Transform a 2d matrix containing attitudes over time into a 2d matrix containing the bin weights for each iteration
+
+    :param matr: 2d matrix containing agents attitude over time
+    :param no_of_bins: No of bins with which to calculate the hist values
+    :param lims: boundaries between the hist is calculated.
+    :return: 2d matrix containing for each column (representing one iteration) the hist bin weigths
+    """
+
+    # empty matrix that will be filled with the hist value
+    hist_matr = np.zeros((no_of_bins, matr.shape[1]))
+
+    # calculate the hist weights for each iteration
+    for i in range(matr.shape[1]):
+        hist_matr[:, i], edges = np.histogram(matr[:,i], bins=no_of_bins, range=lims)
+
+    return hist_matr
+
+
+
 def count_no_of_occurence_in_intervall(llb, lb, ub, arr):
+    """
+    Count the number of times an opinion within a given intervall occurs in a list of opinions
+
+    :param llb: the absolutely lowest value possible for all function calls
+    :param lb: lower boundary of the interval
+    :param ub: upper boundary of the interval
+    :param arr: numbers in an array
+    :return: Number of elements within the given interval
+    """
     no=0
 
     # exception for the lowest possible lb. Otherwise some values would either be left out or counted twice
@@ -20,8 +119,14 @@ def count_no_of_occurence_in_intervall(llb, lb, ub, arr):
     return no
 
 
-# calculated the maximal and minimal attitude values. They are decided by the number of 1's in the linkage matrix C.
+
 def calc_min_max_atts(C):
+    """
+    Calculate the maximal and minimal attitude values. They are decided by the number of 1'sin the linkage matrix C.
+
+    :param C: Connection matrix consisting of 1, 0, or -1
+    :return: Matrix with the max and min possible value for each row in C
+    """
     # matrix for saving the result
     max_min_atts = np.zeros((C.shape[0], 2))
     # iterate through each behaviour (the rows of C)
@@ -36,25 +141,47 @@ def calc_min_max_atts(C):
     return max_min_atts
 
 
-# calculated the maximal value possible for the pairwise distances (in 2d space, if two point are in opposite
-# corners of the grid.
+
 def max_mean_pairwise_distance(C):
+    """
+    # Calculate the maximal value possible for the pairwise distances (in 2d space, if two point are in opposite
+    # corners of the grid.
+
+    :param C: Connection matrix
+    :return: Maximum pairwise distance
+    """
     lmts = calc_min_max_atts(C)
     max_mean_dist = np.linalg.norm(lmts[:, 1])
     return max_mean_dist
 
 
-# calculates the mean attitude for all iterations
 def calc_means(matr):
-    means = []
+    """
+    Calculate the mean attitude for each iteration
+
+    :param matr: matrix with attitude distribution over time
+    :return: means over time
+    """
+    means = np.zeros(matr.shape[0])
+
     for i in range(matr.shape[0]):
-        means.append(np.mean(matr[i, :, :], axis=0))
+        means[i] = np.mean(matr[i, :], axis=0)
 
     return means
 
+"""
+***********************************************************************************************************************
+THE FOLLOWING FUNCTIONS MIGHT NOT WORK AS INTENDED. CHECK BEFORE USE!!!
+***********************************************************************************************************************
+"""
 
-# calculates the mean distance of attitude from the mean attitude over time
 def calc_mean_distance_time(atts_over_time):
+    """
+    Calculate the mean distance of attitude from the mean attitude over time
+
+    :param atts_over_time:
+    :return:
+    """
 
     for ele in atts_over_time:
         ele['attitudes'] = rearrange_attitude_list(ele['attitudes'])
