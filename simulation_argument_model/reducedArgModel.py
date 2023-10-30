@@ -86,7 +86,7 @@ def simulate_agent_interaction(model_parameters, measures):
     no_of_agents = model_parameters["no_of_agents"]
     no_of_iterations = model_parameters["no_of_iterations"]
     beta = model_parameters["ß"]
-    M = model_parameters["C"]
+    M = model_parameters["M"]
     if type(M) is not int:
         raise ValueError("The number of implicitely modelled arguments M must be of type int")
 

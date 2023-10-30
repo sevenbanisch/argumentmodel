@@ -33,3 +33,15 @@ def update_measure_dict(agents_eval, agents_att, interaction, measures):
         measures[measure_name][:, :, interaction] = np.cov(agents_eval)
 
     return measures
+
+
+def create_connection_matrix_symmetrical(no_of_arguments, normalised):
+    C = np.ones(no_of_arguments)
+    midpoint_of_C = int(len(C) * 0.5)
+    C[midpoint_of_C:] = - 1
+    C = np.asmatrix(C, dtype=np.float64)
+
+    if normalised:
+        return C / (no_of_arguments * 0.5)
+    else:
+        return C

@@ -67,6 +67,7 @@ def coherence_diff(C_selective, agents_att_receivers, arg_diff):
     :param arg_diff: difference in the evaluation of the communicated argument between receiver and sender
     :return: difference in coherence from argument adoption for all receivers
     """
+
     res = np.multiply(np.multiply(C_selective.transpose(), agents_att_receivers), arg_diff.transpose())
     return res
 
@@ -105,7 +106,7 @@ def single_interaction(agents_eval, agents_att, agent_indices, beta, C, communic
     # extracts the evaluation of the communicated argument and its respective polarisation
     for index, argument in enumerate(communicated_arguments):
         # The polarity of the argument a sender has chosen to communicate
-        C_selective[index] = np.round(C[0, argument], 4)
+        C_selective[index] = np.round(C[0, argument], 4) * C.shape[1] * 0.5
         # The evaluation of the argument for the respective pairing
         arg_old[index] = agents_eval_receivers[index, argument]
         arg_new[index] = agents_eval_senders[index, argument]
