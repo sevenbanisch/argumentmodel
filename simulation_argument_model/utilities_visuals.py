@@ -23,16 +23,12 @@ def two_d_histogramm_single_simulation(matr, NO_OF_BINS, C):
     # calulates the maximal and minimal possible attitude based on C
     if type(C) is int:
         no_modelled_args_per_side = C
-        lims = np.array([[-no_modelled_args_per_side,no_modelled_args_per_side]])
+        lims = np.array([[-1,1]])
     else:
         lims = calc_min_max_atts(C)
 
     cmap_out_group = mpl.cm.Reds
     cmap_out_group.set_under(color='white')
-
-    # creates the first subplot which shows the distribution of attitudes.
-    if type(C) is int:
-        matr = no_modelled_args_per_side * matr
 
     data = distr_to_2d_histogram(matr, NO_OF_BINS, lims[0,:])
     extent = [0, data.shape[1], lims[0,0], lims[0,1]]
@@ -53,7 +49,7 @@ def distr_to_2d_histogram(matr, no_of_bins, lims):
     :param matr: 2d matrix containing agents attitude over time
     :param no_of_bins: No of bins with which to calculate the hist values
     :param lims: boundaries between the hist is calculated.
-    :return: 2d matrix containing for each column (representing one iteration) the hist bin weigths
+    :return: 2d matrix containing for each column (representing one iteration) the hist bin weights
     """
 
     # empty matrix that will be filled with the hist value
@@ -80,9 +76,9 @@ def calc_min_max_atts(C):
         # save the elements in a row where C is bigger than zero.
         rowmax = np.where(C[i, :] > 0)
         # the length of the array containing those elements decides the maximally possible attitude
-        max_min_atts[i, 1] = len(rowmax[0])
+        max_min_atts[i, 1] = np.sum(C[i,rowmax[1]])
         rowmin = np.where(C[i, :] < 0)
-        max_min_atts[i, 0] = -len(rowmin[0])
+        max_min_atts[i, 0] = np.sum(C[i,rowmin[1]])
 
     return max_min_atts
 

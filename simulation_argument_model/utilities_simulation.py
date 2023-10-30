@@ -28,8 +28,8 @@ def update_measure_dict(agents_eval, agents_att, interaction, measures):
     if measure_name in measures_to_be_taken:
         measures[measure_name][interaction] = np.std(agents_att)**2
 
-    measure_name = "correlation_evaluations"
+    measure_name = "correlation_of_evaluations"
     if measure_name in measures_to_be_taken:
-        raise Exception("Not yet implemented :)")
+        measures[measure_name][:, :, interaction] = np.cov(agents_eval)
 
     return measures
