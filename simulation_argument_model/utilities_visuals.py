@@ -6,35 +6,6 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 
-def plot_iterations_DEPRECATED(opinions_over_time, no_of_bins, lmts):
-    """
-    DEPRECATED
-    Convert a list of an array into a list of histograms
-
-    :param opinions_over_time: list of opinion distributions
-    :param no_of_bins: Number of bins for hist weight calculation
-    :param lmts: boundaries for hist calculation
-    :return: list of histogram weights and the extent of the calculated data
-    """
-
-    # sets the upper and lower limits for the y-axis
-    spread = np.floor(lmts[1])-np.ceil(lmts[0])
-
-    stepsize = spread/no_of_bins
-
-    # to show the data in a 2d heatmap, they are written into a 2d array
-    data_in_proper_form = np.zeros((no_of_bins, len(opinions_over_time)))
-    hel = len(data_in_proper_form)
-
-    #restructuring data to allow for the heatmap to be generated
-    for i in range(len(opinions_over_time)):
-        for j in range(hel):
-            data_in_proper_form[j][i] = count_no_of_occurence_in_intervall(np.ceil(lmts[0]), (np.floor(lmts[1]))-stepsize*(j+1), (np.floor(lmts[1]))-stepsize*j,
-                                                                              opinions_over_time[i])
-
-    return data_in_proper_form, [0 , len(opinions_over_time), lmts[0] , lmts[1]]
-
-
 def two_d_histogramm_single_simulation(matr, NO_OF_BINS, C):
     """
     Create a single plot that shows the change in attitude distribution over time with the use of histograms.
@@ -72,6 +43,7 @@ def two_d_histogramm_single_simulation(matr, NO_OF_BINS, C):
     plt.xlabel("Time in Iterations")
     plt.grid(visible=True, axis='both', color='black', alpha=0.3)
     plt.tick_params(axis="x", labelsize=fontsize)
+    plt.show()
 
 
 def distr_to_2d_histogram(matr, no_of_bins, lims):
@@ -94,32 +66,6 @@ def distr_to_2d_histogram(matr, no_of_bins, lims):
     return hist_matr
 
 
-
-def count_no_of_occurence_in_intervall(llb, lb, ub, arr):
-    """
-    Count the number of times an opinion within a given intervall occurs in a list of opinions
-
-    :param llb: the absolutely lowest value possible for all function calls
-    :param lb: lower boundary of the interval
-    :param ub: upper boundary of the interval
-    :param arr: numbers in an array
-    :return: Number of elements within the given interval
-    """
-    no=0
-
-    # exception for the lowest possible lb. Otherwise some values would either be left out or counted twice
-    if lb == llb:
-        for ele in arr:
-            if lb <= ele <= ub:
-                no += 1
-    else:
-        for ele in arr:
-            if lb < ele <= ub:
-                no += 1
-    return no
-
-
-
 def calc_min_max_atts(C):
     """
     Calculate the maximal and minimal attitude values. They are decided by the number of 1'sin the linkage matrix C.
@@ -139,7 +85,6 @@ def calc_min_max_atts(C):
         max_min_atts[i, 0] = -len(rowmin[0])
 
     return max_min_atts
-
 
 
 def max_mean_pairwise_distance(C):
@@ -245,3 +190,55 @@ def calc_mean_pairwise_over_time(atts_over_time):
 def rearrange_attitude_list(list_of_attitude_list):
     matr = np.array(list_of_attitude_list)
     return matr
+
+def plot_iterations_DEPRECATED(opinions_over_time, no_of_bins, lmts):
+    """
+    DEPRECATED
+    Convert a list of an array into a list of histograms
+
+    :param opinions_over_time: list of opinion distributions
+    :param no_of_bins: Number of bins for hist weight calculation
+    :param lmts: boundaries for hist calculation
+    :return: list of histogram weights and the extent of the calculated data
+    """
+
+    # sets the upper and lower limits for the y-axis
+    spread = np.floor(lmts[1])-np.ceil(lmts[0])
+
+    stepsize = spread/no_of_bins
+
+    # to show the data in a 2d heatmap, they are written into a 2d array
+    data_in_proper_form = np.zeros((no_of_bins, len(opinions_over_time)))
+    hel = len(data_in_proper_form)
+
+    #restructuring data to allow for the heatmap to be generated
+    for i in range(len(opinions_over_time)):
+        for j in range(hel):
+            data_in_proper_form[j][i] = count_no_of_occurence_in_intervall(np.ceil(lmts[0]), (np.floor(lmts[1]))-stepsize*(j+1), (np.floor(lmts[1]))-stepsize*j,
+                                                                           opinions_over_time[i])
+
+    return data_in_proper_form, [0 , len(opinions_over_time), lmts[0] , lmts[1]]
+
+
+def count_no_of_occurence_in_intervall_DEPRECATED(llb, lb, ub, arr):
+    """
+    Count the number of times an opinion within a given intervall occurs in a list of opinions
+
+    :param llb: the absolutely lowest value possible for all function calls
+    :param lb: lower boundary of the interval
+    :param ub: upper boundary of the interval
+    :param arr: numbers in an array
+    :return: Number of elements within the given interval
+    """
+    no=0
+
+    # exception for the lowest possible lb. Otherwise some values would either be left out or counted twice
+    if lb == llb:
+        for ele in arr:
+            if lb <= ele <= ub:
+                no += 1
+    else:
+        for ele in arr:
+            if lb < ele <= ub:
+                no += 1
+    return no

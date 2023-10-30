@@ -1,4 +1,5 @@
 # import needed packages
+import utilities_simulation as us
 import numpy as np
 from numba import jit
 
@@ -126,20 +127,25 @@ def single_interaction(agents_eval, agents_att, agent_indices, beta, C, communic
     return agents_eval
 
 
-def simulate_agent_interaction(no_of_agents, no_of_iterations, beta, C, SyPaAn):
+def simulate_agent_interaction(model_parameters, measures):
     """
     Simulate the whole model. If SyPaAn is True, only the state of the model after the last iteration will be returned.
 
-    :param no_of_agents: Number of agents simulated in the model
-    :param no_of_iterations: Number of Iterations
-    :param beta: Strength of biased processing
-    :param C: Connection Matrix used to connect arguments to an agents attitude
-    :param SyPaAn: Bool indicating wether to return data for more than one iteration or only for the end of a model run
+    :param model_parameters: Model parameters such as number of agents etc.
+    :param measures: dict with measures to be taken and a variable in which to add the taken measurements
     :return:
         loal: list of attitude distribution throughout the iterations
-        # lovl: list of evaluation distributions throughout the iterations
-
+        measures: dictionary with taken measures in a list
     """
+
+    no_of_agents = model_parameters["no_of_agents"]
+    no_of_iterations = model_parameters["no_of_iterations"]
+    beta = model_parameters["ß"]
+    C = model_parameters["C"]
+    if type(C) is not np.matrix:
+        raise ValueError("The connection matrix C must be of type np.matrix")
+
+    SyPaAn = model_parameters["SPA"]
 
     # initiates the agents
     agents_eval = initiate_agents(no_of_agents, C.shape[1])
@@ -150,10 +156,6 @@ def simulate_agent_interaction(no_of_agents, no_of_iterations, beta, C, SyPaAn):
     agents_midpoint = int(no_of_agents/2)
 
     agent_indices = np.arange(0, no_of_agents)
-
-    # Only if we are not conduction a Systematic Parameter Analysis will we need these lists
-    if not SyPaAn:
-        matrix_attitudes = np.zeros((no_of_agents, no_of_iterations))
 
     # simulates a single iteration
     for interaction in range(no_of_iterations):
@@ -170,14 +172,15 @@ def simulate_agent_interaction(no_of_agents, no_of_iterations, beta, C, SyPaAn):
         # data about the simulation run is collected and stored for later analysis. It is only stored after a
         # "Macro-iteration", meaning after no_of_agents iteration.
         if not SyPaAn:
-            matrix_attitudes[:, interaction] = agents_att.reshape((len(agents_att),))
+            #matrix_attitudes[:, interaction] = agents_att.reshape((len(agents_att),))
+            measures = us.update_measure_dict(agents_eval, agents_att, interaction, measures)
 
     # if a Systematic Parameter Analysis is performed, only the state of the agents
     # after the last iteration is of concern
     if SyPaAn:
         # returns the attitude at the end of the model simulation and the indexes of agents in the group
-        return agents_att.copy()
+        return measures
 
     # returns the list of attitudes for each iteration, the list of evaluations for each iteration and the indexes of the agents in the group
-    return matrix_attitudes
+    return measures
     #return list_of_attitude_lists # , list_of_eval_lists
