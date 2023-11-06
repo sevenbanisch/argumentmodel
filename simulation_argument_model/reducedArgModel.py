@@ -104,12 +104,12 @@ def simulate_agent_interaction(model_parameters, measures):
 
         # data about the simulation run is collected and stored for later analysis. It is only stored after a
         # "Macro-iteration", meaning after no_of_agents iteration.
-        if not SyPaAn:
-            measures = us.update_measure_dict(None, agents_att, interaction, measures)
+        measures = us.update_measure_dict(None, agents_att, interaction, measures)
 
     # if a Systematic Parameter Analysis is performed, only the state of the agents
     # after the last iteration is of concern
     if SyPaAn:
+        measures = us.update_measure_dict_for_SyPaAn(None, agents_att, no_of_iterations, measures)
         # returns the attitude at the end of the model simulation and the indexes of agents in the group
         return measures
 

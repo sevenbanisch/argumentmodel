@@ -24,9 +24,17 @@ def update_measure_dict(agents_eval, agents_att, interaction, measures):
     if measure_name in measures_to_be_taken:
         measures[measure_name][interaction] = np.mean(agents_att)
 
+    measure_name = "mean_attitude_END_VALUE"
+    if measure_name in measures_to_be_taken:
+        measures[measure_name] = np.mean(agents_att)
+
     measure_name = "variance_attitude"
     if measure_name in measures_to_be_taken:
         measures[measure_name][interaction] = np.std(agents_att)**2
+
+    measure_name = "variance_attitude_END_VALUE"
+    if measure_name in measures_to_be_taken:
+        measures[measure_name] = np.std(agents_att)**2
 
     measure_name = "correlation_of_evaluations"
     if measure_name in measures_to_be_taken:
@@ -35,7 +43,19 @@ def update_measure_dict(agents_eval, agents_att, interaction, measures):
     return measures
 
 
+def update_measure_dict_for_SyPaAn(agents_eval, agents_att, no_of_iterations, measures):
+    return None
+
+
 def create_connection_matrix_symmetrical(no_of_arguments, normalised):
+    """
+    Create a symmetrical Connection matrix in which half of the arguments are considered pro and the other half con.
+    Can optionally be normalised so that the values of the matrix are divided by M*0.5
+    :param no_of_arguments: Number of arguments (columns of the connection matrix)
+    :param normalised: Boolean if the matrix will be normalised
+    :return:
+        C: symmetrical connection matrix
+    """
     C = np.ones(no_of_arguments)
     midpoint_of_C = int(len(C) * 0.5)
     C[midpoint_of_C:] = - 1

@@ -6,6 +6,37 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 
+def transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, measure, depending_variables):
+    measure_values = []
+    dependency_values = []
+
+    result_array = np.zeros(len(depending_variables)+1)
+
+    for single_param_comb in SyPaAn_data:
+
+        single_data_point = np.zeros((len(depending_variables)+1, len(single_param_comb[measure])))
+        single_data_point[0, :] = np.array(single_param_comb[measure])
+
+        for index, dependency in enumerate(depending_variables):
+            single_data_point[1+index, :] = single_param_comb[dependency]
+
+        result_array = np.c_[result_array, single_data_point]
+
+    return result_array
+
+def xy_plot_measurement(x_axis, y_axis, SyPaAn_data):
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, y_axis, [x_axis])
+
+    fig = plt.figure()
+
+    plt.scatter(data_points[1], data_points[0])
+    plt.title(f"Plot between {x_axis} and {y_axis}")
+    plt.xlabel(x_axis)
+    plt.ylabel(y_axis)
+
+    plt.show()
+
+
 def two_d_histogramm_single_simulation(matr, NO_OF_BINS, C):
     """
     Create a single plot that shows the change in attitude distribution over time with the use of histograms.
