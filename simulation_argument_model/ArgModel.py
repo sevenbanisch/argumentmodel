@@ -30,7 +30,7 @@ def calculate_attitude_of_agents(agents, C):
     :param C: Connection matrix
     :return: matrix with attitudes for all agents
     """
-    return agents @ C.transpose()
+    return np.round(agents @ C.transpose(), 4)
 
 
 @jit(nopython=True)
@@ -55,7 +55,7 @@ def part_of_eval_matrix(agents_eval, indexes):
     :param indexes: List of indices that will be return
     :return: Matrix of agents argument evaluations
     """
-    res = 2.0 * agents_eval[indexes] - 1.0
+    res = np.round(2.0 * agents_eval[indexes] - 1.0, 4)
     return res
 
 

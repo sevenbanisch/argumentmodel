@@ -96,8 +96,6 @@ def simulate_agent_interaction(model_parameters, measures):
     if type(M) is not int:
         raise ValueError("The number of implicitely modelled arguments M must be of type int")
 
-    SyPaAn = model_parameters["SPA"]
-
     # initiates the agents
     agents_att = initiate_agents(no_of_agents, implied_C)
     agent_indices = np.arange(0, no_of_agents)
@@ -110,14 +108,13 @@ def simulate_agent_interaction(model_parameters, measures):
 
         # data about the simulation run is collected and stored for later analysis. It is only stored after a
         # "Macro-iteration", meaning after no_of_agents iteration.
-        measures = us.update_measure_dict(None, agents_att, interaction, measures)
+        measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures)
+        if stop_sim:
+            for not_modelled in range(interaction+1, no_of_iterations):
+                measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures)
+            break
 
-    # if a Systematic Parameter Analysis is performed, only the state of the agents
-    # after the last iteration is of concern
-    if SyPaAn:
-        measures = us.update_measure_dict_for_SyPaAn(None, agents_att, no_of_iterations, measures)
-        # returns the attitude at the end of the model simulation and the indexes of agents in the group
-        return measures
+    measures = us.update_measure_dict_after_simulation(None, agents_att, no_of_iterations, measures)
 
     # returns the list of attitudes for each iteration, the list of evaluations for each iteration and
     # the indexes of the agents in the group
