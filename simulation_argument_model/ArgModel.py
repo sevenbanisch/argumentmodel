@@ -70,7 +70,7 @@ def coherence_diff(C_selective, agents_att_receivers, arg_diff):
     :return: difference in coherence from argument adoption for all receivers
     """
 
-    res = np.multiply(np.multiply(C_selective.transpose(), agents_att_receivers), arg_diff.transpose())
+    res = np.multiply(np.multiply(arg_diff.transpose(), agents_att_receivers), C_selective.transpose())
     return res
 
 
@@ -148,8 +148,6 @@ def simulate_agent_interaction(model_parameters, measures):
     if type(C) is not np.matrix:
         raise ValueError("The connection matrix C must be of type np.matrix")
 
-    SyPaAn = model_parameters["SPA"]
-
     # initiates the agents
     agents_eval = initiate_agents(no_of_agents, C.shape[1])
 
@@ -165,7 +163,7 @@ def simulate_agent_interaction(model_parameters, measures):
 
         np.random.shuffle(agent_indices)
 
-        l_communicated_argument = np.random.randint(0, C.shape[1]+1, agents_midpoint)
+        l_communicated_argument = np.random.randint(0, C.shape[1], agents_midpoint)
         l_random_number_for_if_clause = np.random.uniform(0, 1, agents_midpoint)
 
         agents_eval = single_interaction(agents_eval, agents_att, agent_indices, beta, C, l_communicated_argument, l_random_number_for_if_clause)
@@ -174,14 +172,15 @@ def simulate_agent_interaction(model_parameters, measures):
 
         # data about the simulation run is collected and stored for later analysis. It is only stored after a
         # "Macro-iteration", meaning after no_of_agents iteration.
-        if not SyPaAn:
-            measures = us.update_measure_dict(agents_eval, agents_att, interaction, measures)
+        measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures)
+        if stop_sim:
+            for not_modelled in range(interaction+1, no_of_iterations):
+                measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures)
+            break
 
     # if a Systematic Parameter Analysis is performed, only the state of the agents
     # after the last iteration is of concern
-    if SyPaAn:
-        # returns the attitude at the end of the model simulation and the indexes of agents in the group
-        measures = us.update_measure_dict(agents_eval, agents_att, no_of_iterations, measures)
+    measures = us.update_measure_dict_after_simulation(agents_eval, agents_att, no_of_iterations, measures)
 
     # returns the list of attitudes for each iteration, the list of evaluations for each iteration and the indexes of the agents in the group
     return measures

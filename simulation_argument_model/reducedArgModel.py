@@ -3,9 +3,11 @@ import numpy as np
 from numba import jit
 import utilities_simulation as us
 
+import itertools
+
 
 @jit(nopython=True)
-def initiate_agents(no_agents):
+def initiate_agents(no_agents, C):
     """
     Initiate no_agents agents with uniform random attitudes between -1 and 1 and returns them in a matrix.
 
@@ -13,7 +15,10 @@ def initiate_agents(no_agents):
     :return: list of agents attitude
     """
 
-    agent_att = np.random.uniform(-1, 1, no_agents)
+    agent_eval = np.reshape(np.random.randint(0, 2, no_agents * C.shape[1]), (no_agents, C.shape[1])).astype(np.float64)
+    agent_att = agent_eval @ C.transpose()
+    #agent_att = np.random.uniform(-1, 1, no_agents)
+
 
     return agent_att
 
@@ -87,13 +92,14 @@ def simulate_agent_interaction(model_parameters, measures):
     no_of_iterations = model_parameters["no_of_iterations"]
     beta = model_parameters["ß"]
     M = model_parameters["M"]
+    implied_C = us.create_connection_matrix_symmetrical(M * 2, True)
     if type(M) is not int:
         raise ValueError("The number of implicitely modelled arguments M must be of type int")
 
     SyPaAn = model_parameters["SPA"]
 
     # initiates the agents
-    agents_att = initiate_agents(no_of_agents)
+    agents_att = initiate_agents(no_of_agents, implied_C)
     agent_indices = np.arange(0, no_of_agents)
 
     # simulates a single iteration
@@ -116,3 +122,39 @@ def simulate_agent_interaction(model_parameters, measures):
     # returns the list of attitudes for each iteration, the list of evaluations for each iteration and
     # the indexes of the agents in the group
     return measures
+
+# implements the iteration through a predefined parameter space
+def systematic_parameter_analysis(SPA_params, params, measures):
+
+    # list which will contain the results
+    measures_from_SPA = []
+
+    params_possbls = []
+    # the parameter values that are iterated over are created using the upper and lower boundary provided by a variable, and the provided number of steps for each parameter
+    for i in range(len(SPA_params['params_to_iter'])):
+        params_possbls.append(np.linspace(SPA_params['boundaries'][i, 0], SPA_params['boundaries'][i, 1], SPA_params['no_of_steps'][i]))
+
+    # creates the cartesion product out of the parameter values
+    cartesian = itertools.product(*params_possbls)
+
+    # runs a certain number of simulations for every parameter combination
+    for ele in cartesian:
+        print(np.round(ele,2))
+        measures_from_single_comb = []
+        for index, value in enumerate(ele):
+            params[SPA_params['params_to_iter'][index]] = value
+
+        for i in range(SPA_params['sims_per_comb']):
+            measures_single_sim = measures.copy()
+            # runs the model and returns the attitudes after the last iteration, as well as the inidices of the group members
+            measures_single_sim = simulate_agent_interaction(params, measures_single_sim)
+            measures_from_single_comb.append(measures_single_sim)
+
+        # saves the results in a dictionary
+        dict_comb = {k: [d[k] for d in measures_from_single_comb] for k in measures_from_single_comb[0]}
+        dict_comb.update(params)
+
+        # adds the dictionary to the results list
+        measures_from_SPA.append(dict_comb)
+
+    return measures_from_SPA

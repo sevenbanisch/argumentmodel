@@ -22,7 +22,23 @@ def transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, measure, depe
 
         result_array = np.c_[result_array, single_data_point]
 
-    return result_array
+    return result_array[:, 1:]
+
+def xy_plot_measurement_boxplot(x_axis, y_axis, SyPaAn_data):
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, y_axis, [x_axis])
+
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    fig = plt.figure(figsize=(15,9))
+
+    plt.boxplot(y_values, positions=np.round(x_values,2), widths=0.075)
+    plt.title(f"Plot between {x_axis} and {y_axis}")
+    plt.xticks(rotation=90)
+    plt.xlabel(x_axis)
+    plt.ylabel(y_axis)
+
+    plt.show()
 
 def xy_plot_measurement(x_axis, y_axis, SyPaAn_data):
     data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, y_axis, [x_axis])
