@@ -1,7 +1,7 @@
 # import needed packages
 import numpy as np
 from numba import jit
-import utilities_simulation as us
+from . import utilities_simulation as us
 
 import itertools
 
