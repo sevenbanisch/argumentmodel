@@ -41,6 +41,13 @@ def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, 
             measures[measure_name] = interaction
             stop_simulation = True
 
+    measure_name = "max_variance"
+    if measure_name in measures_to_be_taken:
+        variance = np.std(agents_att).round(4)**2
+        if measures[measure_name] < variance:
+            measures[measure_name] = variance
+
+
     return measures, stop_simulation
 
 def update_measure_dict_after_simulation(agents_eval, agents_att, interaction, measures):

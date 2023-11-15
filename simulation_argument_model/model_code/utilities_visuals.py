@@ -24,6 +24,7 @@ def transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, measure, depe
 
     return result_array[:, 1:]
 
+
 def xy_plot_measurement_boxplot(x_axis, y_axis, SyPaAn_data):
     data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, y_axis, [x_axis])
 
