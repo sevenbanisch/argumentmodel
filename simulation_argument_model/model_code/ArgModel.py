@@ -211,13 +211,14 @@ def systematic_parameter_analysis(SPA_params, params, measures):
 
         for i in range(SPA_params['sims_per_comb']):
             measures_single_sim = measures.copy()
-            # runs the model and returns the attitudes after the last iteration, as well as the inidices of the group members
+            # runs the model and returns the taken measurements
             measures_single_sim = simulate_agent_interaction(params, measures_single_sim)
             measures_from_single_comb.append(measures_single_sim)
 
         # saves the results in a dictionary
         dict_comb = {k: [d[k] for d in measures_from_single_comb] for k in measures_from_single_comb[0]}
         dict_comb.update(params)
+        dict_comb.update({"model_type": "Normal"})
 
         # adds the dictionary to the results list
         measures_from_SPA.append(dict_comb)

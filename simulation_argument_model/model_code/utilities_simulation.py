@@ -46,7 +46,15 @@ def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, 
         variance = np.std(agents_att).round(4)**2
         if measures[measure_name] < variance:
             measures[measure_name] = variance
+        if variance == 0:
+            stop_simulation = True
 
+    measure_name = "slope_variance"
+    # interactions to look back when calculating slope
+    delta = 1
+    if measure_name in measures_to_be_taken and "variance_attitude" in measures_to_be_taken and interaction > delta:
+        slope = (measures["variance_attitude"][interaction] - measures["variance_attitude"][interaction-2]) / (delta)
+        measures[measure_name][interaction] = slope
 
     return measures, stop_simulation
 

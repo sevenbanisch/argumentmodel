@@ -150,6 +150,7 @@ def systematic_parameter_analysis(SPA_params, params, measures):
         # saves the results in a dictionary
         dict_comb = {k: [d[k] for d in measures_from_single_comb] for k in measures_from_single_comb[0]}
         dict_comb.update(params)
+        dict_comb.update({"model_type": "Reduced"})
 
         # adds the dictionary to the results list
         measures_from_SPA.append(dict_comb)

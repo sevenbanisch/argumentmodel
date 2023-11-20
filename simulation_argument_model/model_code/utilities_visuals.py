@@ -7,8 +7,6 @@ import matplotlib as mpl
 
 
 def transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, measure, depending_variables):
-    measure_values = []
-    dependency_values = []
 
     result_array = np.zeros(len(depending_variables)+1)
 
@@ -41,18 +39,89 @@ def xy_plot_measurement_boxplot(x_axis, y_axis, SyPaAn_data):
 
     plt.show()
 
-def xy_plot_measurement(x_axis, y_axis, SyPaAn_data):
+def xy_plot_measurement(x_axis, y_axis, SyPaAn_data, log_scale=False):
     data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, y_axis, [x_axis])
 
     fig = plt.figure()
 
-    plt.scatter(data_points[1], data_points[0])
+    if log_scale:
+        plt.scatter(data_points[1], np.log(data_points[0]))
+    else:
+        plt.scatter(data_points[1], data_points[0])
     plt.title(f"Plot between {x_axis} and {y_axis}")
     plt.xlabel(x_axis)
     plt.ylabel(y_axis)
 
     plt.show()
 
+def xy_plot_measurement_error_plot(x_axis, y_axis, SyPaAn_data):
+
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, y_axis, [x_axis])
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    print(y_values)
+    yerr = 1.96 * np.std(y_values, axis=0)
+    y_vals_mean = np.mean(y_values, axis=0)
+    print(yerr)
+
+    fig = plt.figure()
+
+    plt.errorbar(x_values, y_vals_mean, yerr=yerr)
+    plt.title(f"Plot between {x_axis} and {y_axis}")
+    plt.xlabel(x_axis)
+    plt.ylabel(y_axis)
+
+    plt.show()
+
+
+def plot_beta_against_max_var_two_sims(x_axis, y_axis, SyPaAn_data_sim1, SyPaAn_data_sim2, color1, color2):
+
+    fig = plt.figure()
+
+    # transform data into a matrix
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_sim1, y_axis, [x_axis])
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    y_vals_mean = np.mean(y_values, axis=0)
+    yerr_upper  = y_vals_mean + 1.96 * np.std(y_values, axis=0)
+    yerr_lower  = y_vals_mean - 1.96 * np.std(y_values, axis=0)
+
+    plt.plot(x_values, y_vals_mean, color = color1,
+             label=fr"{SyPaAn_data_sim1[0]['model_type']} Model with $M = {SyPaAn_data_sim1[0]['M']}$ and "
+                   fr"$N = {SyPaAn_data_sim1[0]['no_of_agents']}$")
+    plt.fill_between(x_values, yerr_lower, yerr_upper, color=color1, alpha = 0.5)
+
+
+    # transform data into a matrix
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_sim2, y_axis, [x_axis])
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    y_vals_mean = np.mean(y_values, axis=0)
+    yerr_upper  = y_vals_mean + 1.96 * np.std(y_values, axis=0)
+    yerr_lower  = y_vals_mean - 1.96 * np.std(y_values, axis=0)
+
+    plt.plot(x_values, y_vals_mean, color = color2,
+             label=fr"{SyPaAn_data_sim2[0]['model_type']} Model with $M = {SyPaAn_data_sim2[0]['M']}$ and "
+                   fr"$N = {SyPaAn_data_sim2[0]['no_of_agents']}$")
+
+    plt.fill_between(x_values, yerr_lower, yerr_upper, color=color2, alpha = 0.3)
+
+
+    plt.title("Plot between $\\beta$ and maximum observed Variance")
+    plt.xlabel(r"$\beta$")
+    plt.ylabel("maximum Variance")
+    plt.legend(loc="upper left")
+
+    plt.show()
 
 def two_d_histogramm_single_simulation(matr, NO_OF_BINS, C):
     """
