@@ -19,7 +19,6 @@ def initiate_agents(no_agents, C):
     agent_att = agent_eval @ C.transpose()
     #agent_att = np.random.uniform(-1, 1, no_agents)
 
-
     return agent_att
 
 
@@ -92,7 +91,7 @@ def simulate_agent_interaction(model_parameters, measures):
     no_of_iterations = model_parameters["no_of_iterations"]
     beta = model_parameters["ß"]
     M = model_parameters["M"]
-    implied_C = us.create_connection_matrix_symmetrical(M * 2, True)
+    implied_C = us.create_connection_matrix_symmetrical(M, True)
     if type(M) is not int:
         raise ValueError("The number of implicitely modelled arguments M must be of type int")
 

@@ -62,10 +62,8 @@ def xy_plot_measurement_error_plot(x_axis, y_axis, SyPaAn_data):
     x_values = np.unique(data_points[1])
     y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
 
-    print(y_values)
     yerr = 1.96 * np.std(y_values, axis=0)
     y_vals_mean = np.mean(y_values, axis=0)
-    print(yerr)
 
     fig = plt.figure()
 

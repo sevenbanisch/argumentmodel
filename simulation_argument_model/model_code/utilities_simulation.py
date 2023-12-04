@@ -56,6 +56,15 @@ def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, 
         slope = (measures["variance_attitude"][interaction] - measures["variance_attitude"][interaction-2]) / (delta)
         measures[measure_name][interaction] = slope
 
+    measure_name = "polarization_banisch_single"
+    if measure_name in measures_to_be_taken and measures[measure_name] != 1:
+        extreme_positive = np.where(agents_att > 0.5)[0]
+        extreme_negative = np.where(agents_att < -0.5)[0]
+        moderate = np.where(np.abs(agents_att) <= 0.5)[0]
+        if len(extreme_positive) > len(moderate) and len(extreme_negative) > len(moderate):
+            measures[measure_name] = 1
+
+
     return measures, stop_simulation
 
 def update_measure_dict_after_simulation(agents_eval, agents_att, interaction, measures):
