@@ -1,6 +1,7 @@
 # import needed packages
 from . import utilities_simulation as us
 import numpy as np
+import copy
 from numba import jit
 
 import itertools
@@ -172,10 +173,10 @@ def simulate_agent_interaction(model_parameters, measures):
 
         # data about the simulation run is collected and stored for later analysis. It is only stored after a
         # "Macro-iteration", meaning after no_of_agents iteration.
-        measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures)
+        measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures, model_parameters)
         if stop_sim:
             for not_modelled in range(interaction+1, no_of_iterations):
-                measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures)
+                measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures, model_parameters)
             break
 
     # if a Systematic Parameter Analysis is performed, only the state of the agents
@@ -210,15 +211,17 @@ def systematic_parameter_analysis(SPA_params, params, measures):
             params[SPA_params['params_to_iter'][index]] = value
 
         for i in range(SPA_params['sims_per_comb']):
-            measures_single_sim = measures.copy()
+            measures_single_sim = copy.deepcopy(measures)
             # runs the model and returns the taken measurements
             measures_single_sim = simulate_agent_interaction(params, measures_single_sim)
             measures_from_single_comb.append(measures_single_sim)
+            print(measures_from_single_comb)
 
         # saves the results in a dictionary
         dict_comb = {k: [d[k] for d in measures_from_single_comb] for k in measures_from_single_comb[0]}
         dict_comb.update(params)
         dict_comb.update({"model_type": "Normal"})
+        print(dict_comb)
 
         # adds the dictionary to the results list
         measures_from_SPA.append(dict_comb)

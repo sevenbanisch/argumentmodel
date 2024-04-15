@@ -2,8 +2,8 @@
 import numpy as np
 from numba import jit
 from . import utilities_simulation as us
-
 import itertools
+import copy
 
 
 @jit(nopython=True)
@@ -105,12 +105,11 @@ def simulate_agent_interaction(model_parameters, measures):
         np.random.shuffle(agent_indices)
         agents_att = single_interaction(agents_att, agent_indices, beta, M)
 
-        # data about the simulation run is collected and stored for later analysis. It is only stored after a
-        # "Macro-iteration", meaning after no_of_agents iteration.
-        measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures)
+        # data about the simulation run is collected and stored for later analysis.
+        measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures, model_parameters)
         if stop_sim:
             for not_modelled in range(interaction+1, no_of_iterations):
-                measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures)
+                measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures, model_parameters)
             break
 
     measures = us.update_measure_dict_after_simulation(None, agents_att, no_of_iterations, measures)
@@ -118,6 +117,8 @@ def simulate_agent_interaction(model_parameters, measures):
     # returns the list of attitudes for each iteration, the list of evaluations for each iteration and
     # the indexes of the agents in the group
     return measures
+
+
 
 # implements the iteration through a predefined parameter space
 def systematic_parameter_analysis(SPA_params, params, measures):
@@ -141,10 +142,10 @@ def systematic_parameter_analysis(SPA_params, params, measures):
             params[SPA_params['params_to_iter'][index]] = value
 
         for i in range(SPA_params['sims_per_comb']):
-            measures_single_sim = measures.copy()
+            measures_single_sim = copy.deepcopy(measures)
             # runs the model and returns the attitudes after the last iteration, as well as the inidices of the group members
             measures_single_sim = simulate_agent_interaction(params, measures_single_sim)
-            measures_from_single_comb.append(measures_single_sim)
+            measures_from_single_comb.append(measures_single_sim.copy())
 
         # saves the results in a dictionary
         dict_comb = {k: [d[k] for d in measures_from_single_comb] for k in measures_from_single_comb[0]}

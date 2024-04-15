@@ -6,14 +6,25 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 
-def transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, measure, depending_variables):
+def variance_consensus_rate(SyPaAn_data):
+
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, "variance", ["beta"], 1000)
+
+
+
+
+def transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, measure, depending_variables, interaction=None):
 
     result_array = np.zeros(len(depending_variables)+1)
 
     for single_param_comb in SyPaAn_data:
 
         single_data_point = np.zeros((len(depending_variables)+1, len(single_param_comb[measure])))
-        single_data_point[0, :] = np.array(single_param_comb[measure])
+        if interaction is not None:
+            measure_data = np.array(single_param_comb[measure])
+            single_data_point[0, :] = measure_data[:, interaction]
+        else:
+            single_data_point[0, :] = np.array(single_param_comb[measure])
 
         for index, dependency in enumerate(depending_variables):
             single_data_point[1+index, :] = single_param_comb[dependency]
@@ -114,11 +125,113 @@ def plot_beta_against_max_var_two_sims(x_axis, y_axis, SyPaAn_data_sim1, SyPaAn_
     plt.fill_between(x_values, yerr_lower, yerr_upper, color=color2, alpha = 0.3)
 
 
-    plt.title("Plot between $\\beta$ and maximum observed Variance")
+    plt.title("Plot between $\\beta$" + f" and {y_axis}")
     plt.xlabel(r"$\beta$")
-    plt.ylabel("maximum Variance")
+    plt.ylabel(y_axis)
     plt.legend(loc="upper left")
 
+    plt.show()
+
+
+def plot_beta_against_prob_of_consens_two_sims(SyPaAn_data_sim1, SyPaAn_data_sim2, no_iterations, fname_appendix):
+
+    fig = plt.figure(figsize=(10, 7))
+    fontsize = 14
+    plt.rc('xtick',labelsize=fontsize-2)
+    plt.rc('ytick',labelsize=fontsize-2)
+
+    # transform data into a matrix
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_sim1, "variance_attitude", ['ß'], no_iterations-1)
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    num_consens = sum(np.where(np.round(y_values, 2) > 0), axis=0)
+    y_values_p = num_consens/len(y_values[:, 1])
+
+    plt.scatter(data_points[1,:], data_points[0,:], marker="x", color="lightblue", alpha=0.3)
+
+    plt.plot(x_values, y_values_p, lw=3, color = "lightblue", marker="o", markeredgewidth=1, markeredgecolor="blue",
+             label=fr"{SyPaAn_data_sim1[0]['model_type']} Model with $M = {SyPaAn_data_sim1[0]['M']}$ and "
+                   fr"$N = {SyPaAn_data_sim1[0]['no_of_agents']}$")
+
+
+    # transform data into a matrix
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_sim2, "variance_attitude", ['ß'], no_iterations-1)
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    num_consens = sum(np.where(np.round(y_values, 2) > 0), axis=0)
+    y_values_p = num_consens/len(y_values[:, 1])
+
+    plt.scatter(data_points[1,:], data_points[0,:], marker="x", color="darkorange", alpha=0.1)
+
+    plt.plot(x_values, y_values_p, lw=3, color = "darkorange", marker="o", markeredgewidth=1, markeredgecolor="red",
+             label=fr"{SyPaAn_data_sim2[0]['model_type']} Model with $M = {SyPaAn_data_sim2[0]['M']}$ and "
+                   fr"$N = {SyPaAn_data_sim2[0]['no_of_agents']}$")
+
+
+    plt.title("Relationship between $\\beta$" + f" and Convergence", fontsize=fontsize+2)
+    plt.xlabel(r"$\beta$", fontsize=fontsize)
+    plt.ylabel(f"Probability to not reach a consensus and Variance after {no_iterations} Time Steps", fontsize=fontsize)
+    plt.legend(loc="upper right", fontsize=fontsize)
+
+
+
+    plt.savefig(f"BetaAgainstConsensTimeM4N100_{fname_appendix}.svg", format="svg")
+    plt.show()
+
+
+def plot_beta_against_time_until_consens_two_sims(SyPaAn_data_sim1, SyPaAn_data_sim2, no_iterations, fname_appendix):
+
+    fig = plt.figure(figsize=(10, 7))
+    fontsize = 14
+    plt.rc('xtick',labelsize=fontsize-2)
+    plt.rc('ytick',labelsize=fontsize-2)
+
+    # transform data into a matrix
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_sim1, "time_until_consens", ['ß'])
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    y_vals_mean = np.mean(y_values, axis=0)
+
+    plt.scatter(data_points[1,:], data_points[0,:], marker="x", color="lightblue", alpha=0.3)
+
+    plt.plot(x_values, y_vals_mean, lw=3, color = "lightblue", marker="o", markeredgewidth=1, markeredgecolor="blue",
+             label=fr"{SyPaAn_data_sim1[0]['model_type']} Model with $M = {SyPaAn_data_sim1[0]['M']}$ and "
+                   fr"$N = {SyPaAn_data_sim1[0]['no_of_agents']}$")
+
+
+    # transform data into a matrix
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_sim2, "time_until_consens", ['ß'])
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    y_vals_mean = np.mean(y_values, axis=0)
+
+    plt.scatter(data_points[1,:], data_points[0,:], marker="x", color="darkorange", alpha=0.1)
+
+    plt.plot(x_values, y_vals_mean, lw=3, color = "darkorange", marker="o", markeredgewidth=1, markeredgecolor="red",
+             label=fr"{SyPaAn_data_sim2[0]['model_type']} Model with $M = {SyPaAn_data_sim2[0]['M']}$ and "
+                   fr"$N = {SyPaAn_data_sim2[0]['no_of_agents']}$")
+
+
+    plt.title("Relationship between $\\beta$" + f" and Convergence Time", fontsize=fontsize+2)
+    plt.xlabel(r"$\beta$", fontsize=fontsize)
+    plt.ylabel("Time until Consens", fontsize=fontsize)
+    plt.legend(loc="upper right", fontsize=fontsize)
+
+
+
+    plt.savefig(f"BetaAgainstConsensTimeM4N100_{fname_appendix}.svg", format="svg")
     plt.show()
 
 def two_d_histogramm_single_simulation(matr, NO_OF_BINS, C):

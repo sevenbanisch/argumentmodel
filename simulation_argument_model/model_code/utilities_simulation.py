@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures):
+def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures, parameters):
     """
     Calculate all measures defined in measures.keys() for the given iteration.
     The measures are added into the array given in the measures dict
@@ -30,14 +30,13 @@ def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, 
     if measure_name in measures_to_be_taken:
         measures[measure_name][interaction] = np.std(agents_att)**2
 
-
     measure_name = "correlation_of_evaluations"
     if measure_name in measures_to_be_taken:
         measures[measure_name][:, :, interaction] = np.cov(agents_eval)
 
     measure_name = "time_until_consens"
     if measure_name in measures_to_be_taken:
-        if measures[measure_name] == -1 and np.std(agents_att).round(4)**2 == 0:
+        if measures[measure_name] == parameters["no_of_iterations"] and np.std(agents_att)**2 < 0.01:
             measures[measure_name] = interaction
             stop_simulation = True
 
