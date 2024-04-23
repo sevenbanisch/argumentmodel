@@ -1,11 +1,11 @@
 
-beta = 3.2;
+beta = 3.1;
 N = 500;
-M = 5;
+M = 4;
 pN = 0;
-steps = 5000;
+steps = 500;
 
-A_t = ArgumentModel(steps,N,beta,pN,0);
+%A_t = ArgumentModel(steps,N,beta,pN,0);
 A_tn = NormalizedArgumentModel(steps,N,M,beta,pN,0);
 A_tr = ReducedArgumentModel(steps,N,M,beta,pN,0);
 
@@ -38,10 +38,12 @@ if(1)
     subplot(2,1,1)
     imagesc(flipud(hist(A_tn(:,:),2*M+1)));
     hold on
-    plot(1:steps,(2*M+1)-(2*M+1)*std(reshape(A_tn(:,:),[],steps)),'Linewidth', 3);
+    %plot(1:steps,(2*M+1)-(2*M+1)*std(reshape(A_tn(:,:),[],steps)),'Linewidth', 3);
+    plot(1:steps,(2*M+1)-(2*M+1)*std(reshape(A_tn(:,:),[],steps))+0.5,'Linewidth', 3);
     hold off
     xlabel('time', 'FontSize', 20);
     ylabel('opinion', 'FontSize', 20);
+    
     set(gca,'FontSize',12)
     grid on;
     yticks(1:2*M+1);
@@ -49,12 +51,15 @@ if(1)
     %yticklabels([4,3,2,1,0,-1,-2,-3,-4]);
 
     subplot(2,1,2)
-    imagesc(flipud(hist(A_tr(:,:),2*M+1)));
+    binEdges = -1:1/M:1;
+    imagesc(flipud(hist(A_tr(:,:),binEdges)));
+    %imagesc(flipud(hist(A_tr(:,:),2*M+1)));
     hold on
-    plot(1:steps,(2*M+1)-(2*M+1)*std(reshape(A_tr(:,:),[],steps)),'Linewidth', 3);
+    plot(1:steps,(2*M+1)-(2*M+1)*std(reshape(A_tr(:,:),[],steps))+0.5,'Linewidth', 3);
     hold off
     xlabel('time', 'FontSize', 20);
     ylabel('opinion', 'FontSize', 20);
+    %ylim([1,2*M+1])
     set(gca,'FontSize',12)
     grid on;
     yticks(1:2*M+1);

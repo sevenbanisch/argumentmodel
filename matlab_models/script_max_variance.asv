@@ -1,0 +1,27 @@
+
+
+samplesB = 25;
+samplesIN = 10;
+
+bMax = 5;
+steps = 1000;
+N = 100;
+M = 4;
+pN = 0;
+
+
+DATA_o = zeros(samplesIN,samplesB+1);
+DATA_r = zeros(samplesIN,samplesB+1);
+
+for sB = 0:samplesB
+    beta = bMax*sB/samplesB;
+    for sIN = 0:samplesIN
+        
+        A_to = NormalizedArgumentModel(steps,N,M,beta,pN,0);
+        A_tr = ReducedArgumentModel(steps,N,M,beta,pN,0);
+
+        DATA_o(sIN,sB+1) = max(var(A_to));
+        DATA_r(sIN,sB+1) = max(var(A_tr));
+
+    end
+end

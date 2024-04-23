@@ -25,8 +25,8 @@ args = randi(2,N,2*M)-1;
 
 % 2.2 Polarized
 %args=zeros(N,2*M);
-%args(1:N/2,1:M)=1;
-%args(N/2+1:N,M+1:2*M)=1;
+args(1:N/2,1:M)=1;
+args(N/2+1:N,M+1:2*M)=1;
 
 A = args*V;
 
@@ -38,40 +38,31 @@ A_t(:,1)=A;
 % 4. Simulation Loop 
 
 for step = 1:steps
+    
+    aList = randperm(N);
 
-    % !! runtime optimization
-
-    if(var(A) < 0.001)
-        %A = args*V;
-        A_t(:,step)=A;
-    else
+    for pair = 1:2:N
+        sx = aList(pair);
+        rx = aList(pair+1);
+        kx = randi(2*M);
+        arg = args(sx,kx);
         
-        aList = randperm(N);
-    
-        for pair = 1:2:N
-            sx = aList(pair);
-            rx = aList(pair+1);
-            kx = randi(2*M);
-            arg = args(sx,kx);
-            
-            % Random arguments from external sources.
-            if(rand < pN)
-                 arg = randi(2)-1;
-            end    
-    
-            ix=1;
-            dcoh = (2*arg-1) * M * V(kx,ix) * A(rx,ix);
-            pAdopt = exp(beta * dcoh) / (1 + exp(beta * dcoh));
-            if(rand < pAdopt)
-                args(rx,kx)=arg;
-            end      
-        end
-        
-        A = args*V;
-        A_t(:,step)=A;
+        % Random arguments from external sources.
+        if(rand < pN)
+             arg = randi(2)-1;
+        end    
 
-    end % runtime optimization
+        ix=1;
+        dcoh = (2*arg-1) * M * V(kx,ix) * A(rx,ix);
+        pAdopt = exp(beta * dcoh) / (1 + exp(beta * dcoh));
+        if(rand < pAdopt)
+            args(rx,kx)=arg;
+        end      
+    end
     
+    A = args*V;
+    A_t(:,step)=A;
+
 end     % steps
 
 if(visualize)
