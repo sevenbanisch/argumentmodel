@@ -9,6 +9,12 @@ import os
 
 
 def pickle_sim(SyPaAn_data, SPA_param):
+    """
+    Store the results of a Systematic Parameter Analysis in an extra Folder
+    :param SyPaAn_data: Data
+    :param SPA_param:  parameters that were used to create the simulation
+    :return:
+    """
 
     file_name = f"{SyPaAn_data[0]['model_type']}Model_N{SyPaAn_data[0]['no_of_agents']}_M{SyPaAn_data[0]['M']}_" \
                 f"T{SyPaAn_data[0]['no_of_iterations']}_S{SPA_param['sims_per_comb']}_ß{int(SyPaAn_data[0]['ß'])}{int(SyPaAn_data[-1]['ß'])}.p"
@@ -18,6 +24,14 @@ def pickle_sim(SyPaAn_data, SPA_param):
 
 
 def load_sim(model_param, SPA_param, model_type):
+    """
+    Load the results of a systematic parameter analysis
+
+    :param model_param: model parameters from the analysis
+    :param SPA_param: Iterated parameters
+    :param model_type: Type of the model investigated
+    :return: Dictionary with the simulation results
+    """
 
     file_name = f"{model_type}_N{model_param['no_of_agents']}_M{model_param['M']}_" \
                 f"T{model_param['no_of_iterations']}_S{SPA_param['sims_per_comb']}_" \
