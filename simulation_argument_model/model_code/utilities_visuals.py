@@ -4,13 +4,145 @@ from sklearn.metrics import pairwise_distances
 import scipy.spatial.distance as ssd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import pickle
+import os
+
+
+def pickle_sim(SyPaAn_data, SPA_param):
+
+    file_name = f"{SyPaAn_data[0]['model_type']}Model_N{SyPaAn_data[0]['no_of_agents']}_M{SyPaAn_data[0]['M']}_" \
+                f"T{SyPaAn_data[0]['no_of_iterations']}_S{SPA_param['sims_per_comb']}_ß{int(SyPaAn_data[0]['ß'])}{int(SyPaAn_data[-1]['ß'])}.p"
+    print(file_name)
+    path = open(os.path.join("..","private","simulation_results", file_name), "wb")
+    pickle.dump(SyPaAn_data, path)
+
+
+def load_sim(model_param, SPA_param, model_type):
+
+    file_name = f"{model_type}_N{model_param['no_of_agents']}_M{model_param['M']}_" \
+                f"T{model_param['no_of_iterations']}_S{SPA_param['sims_per_comb']}_" \
+                f"ß{int(SPA_param['boundaries'][0,0])}{int(SPA_param['boundaries'][0,1])}.p"
+    print(file_name)
+    path = open(os.path.join("..","private","simulation_results", file_name), "rb")
+
+    return pickle.load(path)
+
+
+def variance_consensusrate_against_beta(SyPaAn_data, iteration):
+
+    fig = plt.figure(figsize=(13, 7))
+    fontsize = 14
+    plt.rc('xtick',labelsize=fontsize-1)
+    plt.rc('ytick',labelsize=fontsize-1)
+
+    variance_beta = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, "variance_attitude", ["ß"], iteration)
+
+    plt.scatter(variance_beta[1,:], variance_beta[0,:], marker="x", color="lightblue", alpha=0.3)
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    beta = np.unique(variance_beta[1])
+    variance = variance_beta[0].reshape(len(beta),int(len(variance_beta[0])/len(beta))).transpose()
+
+    plt.plot(beta, np.mean(variance, axis=0), lw=3, color = "lightblue", marker="o", markeredgewidth=1, markeredgecolor="blue",
+             label=fr"Variance of the {SyPaAn_data[0]['model_type']} Model after $T = {iteration}$")
+
+    consensus_rate = np.mean(np.where(variance<0.01, 1, 0), axis=0)
+
+    plt.plot(beta, consensus_rate, lw=3, color = "darkorange", marker="o", markeredgewidth=1, markeredgecolor="red",
+             label=fr"Consens Rate of the {SyPaAn_data[0]['model_type']} Model after $T = {iteration}$")
+
+
+    plt.title(fr"Consens Rate and Variance after ${1000}$ Iterations for the {SyPaAn_data[0]['model_type']} Model with $M = {SyPaAn_data[0]['M']}$ and "
+              fr"$N = {SyPaAn_data[0]['no_of_agents']}$", fontsize=fontsize)
+    plt.legend(fontsize=fontsize)
+    plt.xlabel(r"$\beta$", fontsize=fontsize)
+    plt.ylabel("Variance | Consens Rate", fontsize=fontsize)
+
+    plt.savefig(f"variance_consensusrate_against_beta_{SyPaAn_data[0]['model_type']}_{iteration}.svg", format="svg")
+    plt.show()
+
+
+def consensrate_withrespect_T_against_beta(SyPaAn_data, iterations):
+
+    fig = plt.figure(figsize=(13, 7))
+    fontsize = 14
+    plt.rc('xtick',labelsize=fontsize-1)
+    plt.rc('ytick',labelsize=fontsize-1)
+
+    number = len(iterations)+4
+    cmap = plt.get_cmap('autumn')
+    colors = [cmap(i) for i in np.linspace(0, 1, number)]
+    colors.reverse()
+    iterations.reverse()
+
+    for color, edgecolor, iteration in zip(colors[2:-2],colors[4:], iterations):
+        variance_beta = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, "variance_attitude", ["ß"], iteration)
+        # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+        beta = np.unique(variance_beta[1])
+        variance = variance_beta[0].reshape(len(beta),int(len(variance_beta[0])/len(beta))).transpose()
+        consensus_rate = np.mean(np.where(variance<0.01, 1, 0), axis=0)
+
+        plt.plot(beta, consensus_rate, lw=3, color = color, marker="o", markeredgewidth=1, markeredgecolor=edgecolor,
+                 label=fr"Consens Rate after $T = {iteration}$")
+
+    plt.title(fr"Consens Rate at different Timepoints for the {SyPaAn_data[0]['model_type']} Model with $M = {SyPaAn_data[0]['M']}$ and "
+              fr"$N = {SyPaAn_data[0]['no_of_agents']}$", fontsize=fontsize)
+    plt.legend(fontsize=fontsize)
+    plt.xlabel(r"$\beta$", fontsize=fontsize)
+    plt.ylabel("Consens Rate", fontsize=fontsize)
+
+    plt.savefig(f"consensrate_withrespect_T_against_beta_{SyPaAn_data[0]['model_type']}.svg", format="svg")
+    plt.show()
+
+
+def convergence_time_against_beta(SyPaAn_sim1, SyPaAn_sim2):
+    fig = plt.figure(figsize=(13, 7))
+    fontsize = 14
+    plt.rc('xtick',labelsize=fontsize-1)
+    plt.rc('ytick',labelsize=fontsize-1)
+
+    # transform data into a matrix
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_sim1, "time_until_consens", ['ß'])
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    y_vals_mean = np.log(np.mean(y_values, axis=0))
+
+    plt.scatter(data_points[1,:], np.log(data_points[0,:]), marker="x", color="lightblue", alpha=0.3)
+
+    plt.plot(x_values, y_vals_mean, lw=3, color = "lightblue", marker="o", markeredgewidth=1, markeredgecolor="blue",
+             label=fr"{SyPaAn_sim1[0]['model_type']} Model")
+
+    # transform data into a matrix
+    data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_sim2, "time_until_consens", ['ß'])
+
+    # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+    x_values = np.unique(data_points[1])
+    y_values = data_points[0].reshape(len(x_values),int(len(data_points[0])/len(x_values))).transpose()
+
+    y_vals_mean = np.log(np.mean(y_values, axis=0))
+
+    plt.scatter(data_points[1,:], np.log(data_points[0,:]), marker="x", color="darkorange", alpha=0.1)
+
+    plt.plot(x_values, y_vals_mean, lw=3, color = "darkorange", marker="o", markeredgewidth=1, markeredgecolor="red",
+             label=fr"{SyPaAn_sim2[0]['model_type']} Model")
+
+
+    plt.title(fr"Convergence Time for both Models with $M = {SyPaAn_sim1[0]['M']}$, "
+              fr"$N = {SyPaAn_sim1[0]['no_of_agents']}$ and $T_{{max}} = {SyPaAn_sim1[0]['no_of_iterations']}$", fontsize=fontsize)
+    plt.legend(fontsize=fontsize)
+    plt.xlabel(r"$\beta$", fontsize=fontsize)
+    plt.ylabel("Convergence Time (log)", fontsize=fontsize)
+
+    plt.savefig(f"convergence_time_against_beta_bothmodels.svg", format="svg")
+    plt.show()
 
 
 def variance_consensus_rate(SyPaAn_data):
 
     data_points = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, "variance", ["beta"], 1000)
-
-
 
 
 def transform_SyPaAn_single_measure_single_dependency(SyPaAn_data, measure, depending_variables, interaction=None):

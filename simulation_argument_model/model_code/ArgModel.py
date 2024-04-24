@@ -215,13 +215,11 @@ def systematic_parameter_analysis(SPA_params, params, measures):
             # runs the model and returns the taken measurements
             measures_single_sim = simulate_agent_interaction(params, measures_single_sim)
             measures_from_single_comb.append(measures_single_sim)
-            print(measures_from_single_comb)
 
         # saves the results in a dictionary
         dict_comb = {k: [d[k] for d in measures_from_single_comb] for k in measures_from_single_comb[0]}
         dict_comb.update(params)
         dict_comb.update({"model_type": "Normal"})
-        print(dict_comb)
 
         # adds the dictionary to the results list
         measures_from_SPA.append(dict_comb)
