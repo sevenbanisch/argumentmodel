@@ -16,8 +16,12 @@ def pickle_sim(SyPaAn_data, SPA_param):
     :return:
     """
 
-    file_name = f"{SyPaAn_data[0]['model_type']}Model_N{SyPaAn_data[0]['no_of_agents']}_M{SyPaAn_data[0]['M']}_" \
-                f"T{SyPaAn_data[0]['no_of_iterations']}_S{SPA_param['sims_per_comb']}_ß{int(SyPaAn_data[0]['ß'])}{int(SyPaAn_data[-1]['ß'])}.p"
+    file_name = f"{SyPaAn_data[0]['model_type']}Model_" \
+                f"N{int(SyPaAn_data[0]['no_of_agents'])}_{int(SyPaAn_data[-1]['no_of_agents'])}_" \
+                f"M{int(SyPaAn_data[0]['M'])}_{int(SyPaAn_data[-1]['M'])}_" \
+                f"T{SyPaAn_data[0]['no_of_iterations']}_" \
+                f"S{SPA_param['sims_per_comb']}_" \
+                f"ß{int(SyPaAn_data[0]['ß'])}_{int(SyPaAn_data[-1]['ß'])}.p"
     print(file_name)
     path = open(os.path.join("..","private","simulation_results", file_name), "wb")
     pickle.dump(SyPaAn_data, path)
@@ -33,9 +37,12 @@ def load_sim(model_param, SPA_param, model_type):
     :return: Dictionary with the simulation results
     """
 
-    file_name = f"{model_type}_N{model_param['no_of_agents']}_M{model_param['M']}_" \
-                f"T{model_param['no_of_iterations']}_S{SPA_param['sims_per_comb']}_" \
-                f"ß{int(SPA_param['boundaries'][0,0])}{int(SPA_param['boundaries'][0,1])}.p"
+    file_name = f"{model_type}_" \
+                f"N{int(SPA_param['boundaries'][2,0])}_{int(SPA_param['boundaries'][2,1])}_" \
+                f"M{int(SPA_param['boundaries'][1,0])}_{int(SPA_param['boundaries'][1,1])}_" \
+                f"T{model_param['no_of_iterations']}_" \
+                f"S{SPA_param['sims_per_comb']}_" \
+                f"ß{int(SPA_param['boundaries'][0,0])}_{int(SPA_param['boundaries'][0,1])}.p"
     print(file_name)
     path = open(os.path.join("..","private","simulation_results", file_name), "rb")
 

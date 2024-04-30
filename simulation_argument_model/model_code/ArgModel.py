@@ -145,7 +145,8 @@ def simulate_agent_interaction(model_parameters, measures):
     no_of_agents = model_parameters["no_of_agents"]
     no_of_iterations = model_parameters["no_of_iterations"]
     beta = model_parameters["ß"]
-    C = model_parameters["C"]
+    M = int(model_parameters["M"])
+    C = us.create_connection_matrix_symmetrical(M, True)
     if type(C) is not np.matrix:
         raise ValueError("The connection matrix C must be of type np.matrix")
 
