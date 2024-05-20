@@ -17,6 +17,7 @@ def pickle_sim(SyPaAn_data, SPA_param):
     """
 
     file_name = f"{SyPaAn_data[0]['model_type']}Model_" \
+                f"{SyPaAn_data[0]['initiation']}_" \
                 f"N{int(SyPaAn_data[0]['no_of_agents'])}_{int(SyPaAn_data[-1]['no_of_agents'])}_" \
                 f"M{int(SyPaAn_data[0]['M'])}_{int(SyPaAn_data[-1]['M'])}_" \
                 f"T{SyPaAn_data[0]['no_of_iterations']}_" \
@@ -38,6 +39,7 @@ def load_sim(model_param, SPA_param, model_type):
     """
 
     file_name = f"{model_type}_" \
+                f"{model_param['initiation']}_" \
                 f"N{int(SPA_param['boundaries'][2,0])}_{int(SPA_param['boundaries'][2,1])}_" \
                 f"M{int(SPA_param['boundaries'][1,0])}_{int(SPA_param['boundaries'][1,1])}_" \
                 f"T{model_param['no_of_iterations']}_" \
@@ -80,6 +82,40 @@ def variance_consensusrate_against_beta(SyPaAn_data, iteration):
     plt.ylabel("Variance | Consens Rate", fontsize=fontsize)
 
     plt.savefig(f"variance_consensusrate_against_beta_{SyPaAn_data[0]['model_type']}_{iteration}.svg", format="svg")
+    plt.show()
+
+
+def consensrate_withrespect_M_against_beta(SyPaAn_data, Ms, iteration):
+
+    fig = plt.figure(figsize=(13, 7))
+    fontsize = 14
+    plt.rc('xtick',labelsize=fontsize-1)
+    plt.rc('ytick',labelsize=fontsize-1)
+
+    number = len(Ms)+4
+    cmap = plt.get_cmap('autumn')
+    colors = [cmap(i) for i in np.linspace(0, 1, number)]
+    colors.reverse()
+    Ms.reverse()
+
+    for color, edgecolor, M in zip(colors[2:-2],colors[4:], Ms):
+        SyPaAn_data_M = [sim for sim in SyPaAn_data if sim["M"] == M]
+        variance_beta = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_M, "variance_attitude", ["ß"], iteration)
+        # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
+        beta = np.unique(variance_beta[1])
+        variance = variance_beta[0].reshape(len(beta),int(len(variance_beta[0])/len(beta))).transpose()
+        consensus_rate = np.mean(np.where(variance<0.01, 1, 0), axis=0)
+
+        plt.plot(beta, consensus_rate, lw=3, color = color, marker="o", markeredgewidth=1, markeredgecolor=edgecolor,
+                 label=fr"Consens Rate for $M = {M}$")
+
+    plt.title(fr"Consens Rate at different M's for the {SyPaAn_data[0]['model_type']} Model with $T = {iteration}$ and "
+              fr"$N = {SyPaAn_data[0]['no_of_agents']}$", fontsize=fontsize)
+    plt.legend(fontsize=fontsize)
+    plt.xlabel(r"$\beta$", fontsize=fontsize)
+    plt.ylabel("Consens Rate", fontsize=fontsize)
+
+    plt.savefig(f"consensrate_withrespect_M_against_beta{SyPaAn_data[0]['model_type']}.svg", format="svg")
     plt.show()
 
 

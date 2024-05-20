@@ -7,8 +7,8 @@ from numba import jit
 import itertools
 
 
-@jit(nopython=True)
-def initiate_agents(no_agents, no_arguments):
+@jit(nopython=True, fastmath=True)
+def initiate_agents(no_agents, no_arguments, initiation_type):
     """
     Initiate no_agents agents with no_arguments uniform random evaluations of outcomes and returns them in a matrix.
 
@@ -16,13 +16,15 @@ def initiate_agents(no_agents, no_arguments):
     :param no_arguments: Number of arguments
     :return: no_agents x no_arguments matrix filled with boolean evaluations of the arguments
     """
-
-    agent_eval = np.reshape(np.random.randint(0, 2, no_agents * no_arguments), (no_agents, no_arguments)).astype(np.float64)
+    if initiation_type == "binomial":
+        agent_eval = np.reshape(np.random.randint(0, 2, no_agents * no_arguments), (no_agents, no_arguments)).astype(np.float64)
+    else:
+        raise ValueError("Please use a different initiation type!")
 
     return agent_eval
 
 
-@jit(nopython=True)
+@jit(nopython=True, fastmath=True)
 def calculate_attitude_of_agents(agents, C):
     """
     Calculate the attitude and norm of all agents.
@@ -34,7 +36,7 @@ def calculate_attitude_of_agents(agents, C):
     return np.round(agents @ C.transpose(), 4)
 
 
-@jit(nopython=True)
+@jit(nopython=True, fastmath=True)
 def p_beta_diff(beta, coherence_diff):
     """
     Calculate the probability of argument adoption for all coherence difference supplied.
@@ -47,7 +49,7 @@ def p_beta_diff(beta, coherence_diff):
     return res
 
 
-@jit(nopython=True)
+@jit(nopython=True, fastmath=True)
 def part_of_eval_matrix(agents_eval, indexes):
     """
     Return part of the evaluation matrix, only keeping the provided indices
@@ -60,7 +62,7 @@ def part_of_eval_matrix(agents_eval, indexes):
     return res
 
 
-@jit(nopython=True)
+@jit(nopython=True, fastmath=True)
 def coherence_diff(C_selective, agents_att_receivers, arg_diff):
     """
     calculation of the coherence difference: (arg_sender - arg_receiver) * e_i * (attitude) for *each* receiver at once
@@ -75,7 +77,7 @@ def coherence_diff(C_selective, agents_att_receivers, arg_diff):
     return res
 
 
-@jit(nopython=True)
+@jit(nopython=True, fastmath=True)
 def single_interaction(agents_eval, agents_att, agent_indices, beta, C, communicated_arguments, random_numbers):
     """
     Implement a single iteration in the given model
@@ -142,7 +144,7 @@ def simulate_agent_interaction(model_parameters, measures):
         measures: dictionary with taken measures in a list
     """
 
-    no_of_agents = model_parameters["no_of_agents"]
+    no_of_agents = int(model_parameters["no_of_agents"])
     no_of_iterations = model_parameters["no_of_iterations"]
     beta = model_parameters["ß"]
     M = int(model_parameters["M"])
@@ -151,7 +153,7 @@ def simulate_agent_interaction(model_parameters, measures):
         raise ValueError("The connection matrix C must be of type np.matrix")
 
     # initiates the agents
-    agents_eval = initiate_agents(no_of_agents, C.shape[1])
+    agents_eval = initiate_agents(no_of_agents, C.shape[1], model_parameters["initiation"])
 
     # calculates initial attitude of all agents
     agents_att = calculate_attitude_of_agents(agents_eval, C)

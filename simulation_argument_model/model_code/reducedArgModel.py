@@ -7,22 +7,28 @@ import copy
 
 
 @jit(nopython=True)
-def initiate_agents(no_agents, C):
+def initiate_agents(no_agents, C, initiation_type):
     """
     Initiate no_agents agents with uniform random attitudes between -1 and 1 and returns them in a matrix.
 
     :param no_agents: Number of agents
+    :param C: linkage matrix
+    :param initiation_type: indicator describing in which way to initiate the agents attitude
     :return: list of agents attitude
     """
 
-    agent_eval = np.reshape(np.random.randint(0, 2, no_agents * C.shape[1]), (no_agents, C.shape[1])).astype(np.float64)
-    agent_att = agent_eval @ C.transpose()
-    #agent_att = np.random.uniform(-1, 1, no_agents)
+    if initiation_type =="uniform":
+        agent_att = np.reshape(np.random.uniform(-1, 1, no_agents), (no_agents, C.shape[0])).astype(np.float64)
+    elif initiation_type == "binomial":
+        agent_eval = np.reshape(np.random.randint(0, 2, no_agents * C.shape[1]), (no_agents, C.shape[1])).astype(np.float64)
+        agent_att = agent_eval @ C.transpose()
+    else:
+        raise ValueError("Please pick a different initiation type")
 
     return agent_att
 
 
-@jit(nopython=True)
+@jit(nopython=True, fastmath=True)
 def expected_change_in_opinion(M, beta, att_sender, att_receiver):
     """
     Calculation of expected change of opinion (see equation 10 in paper draft of reduced arg model)
@@ -46,7 +52,7 @@ def expected_change_in_opinion(M, beta, att_sender, att_receiver):
     return d_opinion
 
 
-@jit(nopython=True)
+@jit(nopython=True, fastmath=True)
 def single_interaction(agents_att, agent_indices, beta, M):
     """
     Implement a single iteration in the given model
@@ -87,7 +93,7 @@ def simulate_agent_interaction(model_parameters, measures):
         measures: dictionary with taken measures in a list
     """
 
-    no_of_agents = model_parameters["no_of_agents"]
+    no_of_agents = int(model_parameters["no_of_agents"])
     no_of_iterations = model_parameters["no_of_iterations"]
     beta = model_parameters["ß"]
     M = int(model_parameters["M"])
@@ -96,7 +102,7 @@ def simulate_agent_interaction(model_parameters, measures):
         raise ValueError("The number of implicitely modelled arguments M must be of type int")
 
     # initiates the agents
-    agents_att = initiate_agents(no_of_agents, implied_C)
+    agents_att = initiate_agents(no_of_agents, implied_C, model_parameters["initiation"])
     agent_indices = np.arange(0, no_of_agents)
 
     # simulates a single iteration
@@ -107,6 +113,7 @@ def simulate_agent_interaction(model_parameters, measures):
 
         # data about the simulation run is collected and stored for later analysis.
         measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures, model_parameters)
+
         if stop_sim:
             for not_modelled in range(interaction+1, no_of_iterations):
                 measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures, model_parameters)
