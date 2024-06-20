@@ -27,6 +27,10 @@ def pickle_sim(SyPaAn_data, SPA_param):
     path = open(os.path.join("..","private","simulation_results", file_name), "wb")
     pickle.dump(SyPaAn_data, path)
 
+def load_sim_from_name(name):
+    path = open(os.path.join("..","private","simulation_results", name), "rb")
+
+    return pickle.load(path)
 
 def load_sim(model_param, SPA_param, model_type):
     """
@@ -100,16 +104,17 @@ def consensrate_withrespect_M_against_beta(SyPaAn_data, Ms, iteration):
 
     for color, edgecolor, M in zip(colors[2:-2],colors[4:], Ms):
         SyPaAn_data_M = [sim for sim in SyPaAn_data if sim["M"] == M]
-        variance_beta = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_M, "variance_attitude", ["ß"], iteration)
+        iteration_to_pick = int(M/4+0.5)*iteration
+        variance_beta = transform_SyPaAn_single_measure_single_dependency(SyPaAn_data_M, "variance_attitude", ["ß"], iteration_to_pick-1)
         # transform data into one vector containing all x values and one matrix containing in the column the y values for the respective x value
         beta = np.unique(variance_beta[1])
         variance = variance_beta[0].reshape(len(beta),int(len(variance_beta[0])/len(beta))).transpose()
         consensus_rate = np.mean(np.where(variance<0.01, 1, 0), axis=0)
 
         plt.plot(beta, consensus_rate, lw=3, color = color, marker="o", markeredgewidth=1, markeredgecolor=edgecolor,
-                 label=fr"Consens Rate for $M = {M}$")
+                 label=fr"Consens Rate for $M = {M}$ at $T = {iteration_to_pick}$")
 
-    plt.title(fr"Consens Rate at different M's for the {SyPaAn_data[0]['model_type']} Model with $T = {iteration}$ and "
+    plt.title(fr"Consens Rate at different M's for the {SyPaAn_data[0]['model_type']} Model with $T = M/4 * {iteration}$ and "
               fr"$N = {SyPaAn_data[0]['no_of_agents']}$", fontsize=fontsize)
     plt.legend(fontsize=fontsize)
     plt.xlabel(r"$\beta$", fontsize=fontsize)

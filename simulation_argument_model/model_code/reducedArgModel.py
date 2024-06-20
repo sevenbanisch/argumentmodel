@@ -97,9 +97,10 @@ def simulate_agent_interaction(model_parameters, measures):
     no_of_iterations = model_parameters["no_of_iterations"]
     beta = model_parameters["ß"]
     M = int(model_parameters["M"])
+    no_of_iterations = int(M/4+0.5) * 1000
     implied_C = us.create_connection_matrix_symmetrical(M, True)
     if type(M) is not int:
-        raise ValueError("The number of implicitely modelled arguments M must be of type int")
+        raise ValueError("The number of implicitly modelled arguments M must be of type int")
 
     # initiates the agents
     agents_att = initiate_agents(no_of_agents, implied_C, model_parameters["initiation"])
@@ -113,11 +114,11 @@ def simulate_agent_interaction(model_parameters, measures):
 
         # data about the simulation run is collected and stored for later analysis.
         measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures, model_parameters)
-
         if stop_sim:
             for not_modelled in range(interaction+1, no_of_iterations):
-                measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, interaction, measures, model_parameters)
+                measures, stop_sim = us.update_measure_dict_during_simulation(None, agents_att, not_modelled, measures, model_parameters)
             break
+
 
     measures = us.update_measure_dict_after_simulation(None, agents_att, no_of_iterations, measures)
 

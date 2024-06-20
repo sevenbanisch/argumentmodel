@@ -3,6 +3,7 @@ from . import utilities_simulation as us
 import numpy as np
 import copy
 from numba import jit
+import tqdm
 
 import itertools
 
@@ -148,6 +149,9 @@ def simulate_agent_interaction(model_parameters, measures):
     no_of_iterations = model_parameters["no_of_iterations"]
     beta = model_parameters["ß"]
     M = int(model_parameters["M"])
+
+    no_of_iterations = int(M/4+0.5) * 1000
+
     C = us.create_connection_matrix_symmetrical(M, True)
     if type(C) is not np.matrix:
         raise ValueError("The connection matrix C must be of type np.matrix")
@@ -179,7 +183,7 @@ def simulate_agent_interaction(model_parameters, measures):
         measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures, model_parameters)
         if stop_sim:
             for not_modelled in range(interaction+1, no_of_iterations):
-                measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, interaction, measures, model_parameters)
+                measures, stop_sim = us.update_measure_dict_during_simulation(agents_eval, agents_att, not_modelled, measures, model_parameters)
             break
 
     # if a Systematic Parameter Analysis is performed, only the state of the agents

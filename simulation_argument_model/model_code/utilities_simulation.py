@@ -20,7 +20,7 @@ def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, 
 
     measure_name = "attitude_of_all_agents"
     if measure_name in measures_to_be_taken:
-        measures[measure_name][:, interaction] = agents_att.reshape((len(agents_att),))
+        measures[measure_name][:, interaction] = agents_att.reshape((len(agents_att.copy()),))
 
     measure_name = "mean_attitude"
     if measure_name in measures_to_be_taken:
@@ -38,15 +38,12 @@ def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, 
     if measure_name in measures_to_be_taken:
         if measures[measure_name] == parameters["no_of_iterations"] and np.std(agents_att)**2 < 0.01:
             measures[measure_name] = interaction
-            stop_simulation = True
 
     measure_name = "max_variance"
     if measure_name in measures_to_be_taken:
         variance = np.std(agents_att).round(4)**2
         if measures[measure_name] < variance:
             measures[measure_name] = variance
-        if variance == 0:
-            stop_simulation = True
 
     measure_name = "slope_variance"
     # interactions to look back when calculating slope
@@ -63,6 +60,8 @@ def update_measure_dict_during_simulation(agents_eval, agents_att, interaction, 
         if len(extreme_positive) > len(moderate) and len(extreme_negative) > len(moderate):
             measures[measure_name] = 1
 
+    if (np.max(agents_att)-np.min(agents_att)) <= 0.01:
+        stop_simulation = True
 
     return measures, stop_simulation
 
@@ -106,6 +105,27 @@ def create_connection_matrix_symmetrical(no_of_arguments, normalised):
     midpoint_of_C = int(len(C) * 0.5)
     C[midpoint_of_C:] = - 1
     C = np.asmatrix(C, dtype=np.float64)
+
+    if normalised:
+        return C / (no_of_arguments)
+    else:
+        return C
+
+
+def create_connection_array_symmetrical(no_of_arguments, normalised):
+    """
+    Create a symmetrical Connection matrix in which half of the arguments are considered pro and the other half con.
+    Can optionally be normalised so that the values of the matrix are divided by M*0.5. This leads to attitude values
+    between -1 and 1.
+    :param no_of_arguments: Number of arguments (columns of the connection matrix)
+    :param normalised: Boolean if the matrix will be normalised
+    :return:
+        C: symmetrical connection matrix
+    """
+    C = np.ones(no_of_arguments*2)
+    midpoint_of_C = int(len(C) * 0.5)
+    C[midpoint_of_C:] = - 1
+    C = np.asarray(C, dtype=np.float64)
 
     if normalised:
         return C / (no_of_arguments)
