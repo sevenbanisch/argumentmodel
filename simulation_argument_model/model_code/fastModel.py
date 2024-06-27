@@ -1,11 +1,9 @@
 
-
-from . import utilities_simulation as us
 import numpy as np
-from numba import jit, prange
+from numba import jit
 
 # simulates the explicit model
-@jit(nopython=True, fastmath=True, nogil=True)
+@jit(nopython=True, fastmath=True)
 def explicit_model(M, N, T, ß, C):
 
     args = 2 * M
@@ -20,6 +18,11 @@ def explicit_model(M, N, T, ß, C):
     results = np.empty((N, T))
 
     for interaction in range(T):
+
+        # runtime optimization
+        if np.var(agents_att) < 0.001:
+            results[:, interaction] = agents_att
+            continue
 
         indices = np.random.permutation(N)
 
@@ -46,7 +49,7 @@ def explicit_model(M, N, T, ß, C):
     return results
 
 
-@jit(nopython=True, fastmath=True, nogil=True)
+@jit(nopython=True, fastmath=True)
 def reduced_model(M, N, T, ß, C):
 
     args = 2 * M
@@ -61,6 +64,11 @@ def reduced_model(M, N, T, ß, C):
     results = np.empty((N, T))
 
     for interaction in range(T):
+
+        # runtime optimization
+        if np.var(agents_att) < 0.001:
+            results[:, interaction] = agents_att
+            continue
 
         indices = np.random.permutation(N)
 
@@ -82,34 +90,38 @@ def reduced_model(M, N, T, ß, C):
 
 
 @jit(nopython=True)
-def SystematicParameterAnalysis(ß_info, M_steps, no_of_simulations, progress_proxy, N, iteration):
+def SystematicParameterAnalysis(ß_info, M_steps, no_of_simulations, N, base_iterations):
 
     ß_steps = ß_info[2]
 
-    results_red = np.empty((ß_steps, M_steps, no_of_simulations))
-    results_exp = np.empty((ß_steps, M_steps, no_of_simulations))
+    # the three is because the variance is measured at three different points of the simulation.
+    results_red = np.empty((ß_steps, M_steps, no_of_simulations, base_iterations))
+    results_exp = np.empty((ß_steps, M_steps, no_of_simulations, base_iterations))
 
-    for ß_step in range(ß_steps):
+    for base_iteration in range(base_iterations):
 
-        ß = np.round((ß_step/ß_steps) * (ß_info[1] - ß_info[0]),2)
+        # if 3, then the base iterations 250, 1000, 4000 are iterated over
+        iteration = 250 * (4**(base_iteration))
 
-        for M_step in range(M_steps):
+        for ß_step in range(ß_steps):
 
-            M = 4**(M_step+1)
+            ß = np.round((ß_step/ß_steps) * (ß_info[1] - ß_info[0]),2)
 
-            T = M * iteration
+            for M_step in range(M_steps):
 
-            C = create_connection_array_symmetrical(M, True)
+                M = 4**(M_step+1)
 
-            for sim in range(no_of_simulations):
+                T = M * iteration
 
-                one_run_red = explicit_model(M=M, N=N, T=int(M/4)*1000, ß=ß, C=C)
-                one_run_exp = explicit_model(M=M, N=100, T=int(M/4)*1000, ß=ß, C=C)
+                C = create_connection_array_symmetrical(M, True)
 
-                results_red[ß_step, M_step, sim] = np.var(one_run_red[:, -1])
-                results_exp[ß_step, M_step, sim] = np.var(one_run_exp[:, -1])
+                for sim in range(no_of_simulations):
+                    #print(f"T:{T}, N:{N}, ß:{ß}, M:{M}, C:{C}")
+                    one_run_red = explicit_model(M=M, N=N, T=T, ß=ß, C=C)
+                    one_run_exp = explicit_model(M=M, N=N, T=T, ß=ß, C=C)
 
-        progress_proxy.update(1)
+                    results_red[ß_step, M_step, sim, base_iteration] = np.var(one_run_red[:, -1])
+                    results_exp[ß_step, M_step, sim, base_iteration] = np.var(one_run_exp[:, -1])
 
     return results_red, results_exp
 
