@@ -447,13 +447,13 @@ def two_d_histogramm_single_simulation(matr, NO_OF_BINS, C):
         no_modelled_args_per_side = C
         lims = np.array([[-1,1]])
     else:
-        lims = calc_min_max_atts(C)
+        lims = calc_min_max_atts_single(C)
 
     cmap_out_group = mpl.cm.Reds
     cmap_out_group.set_under(color='white')
 
-    data = distr_to_2d_histogram(matr, NO_OF_BINS, lims[0,:])
-    extent = [0, data.shape[1], lims[0,0], lims[0,1]]
+    data = distr_to_2d_histogram(matr, NO_OF_BINS, lims)
+    extent = [0, data.shape[1], lims[0], lims[1]]
 
     plt.imshow(data, extent = extent, cmap=cmap_out_group, interpolation='None', aspect='auto', vmin=0.001)
     plt.title(f"Distribution over time", fontsize=fontsize)
@@ -479,10 +479,29 @@ def distr_to_2d_histogram(matr, no_of_bins, lims):
 
     # calculate the hist weights for each iteration
     for i in range(matr.shape[1]):
-        hist_matr[:, i], edges = np.histogram(matr[:,i], bins=no_of_bins, range=lims)
+        hist_matr[:, i], edges = np.histogram(matr[:, i], bins=no_of_bins, range=lims)
 
     return hist_matr
 
+def calc_min_max_atts_single(C):
+    """
+    Calculate the maximal and minimal attitude values. They are decided by the number of 1'sin the linkage matrix C.
+
+    :param C: Connection matrix consisting of 1, 0, or -1
+    :return: Matrix with the max and min possible value for each row in C
+    """
+    # matrix for saving the result
+    max_min_atts = np.zeros(2)
+    # iterate through each behaviour (the rows of C)
+
+    # save the elements in a row where C is bigger than zero.
+    rowmax = np.where(C > 0)
+    # the length of the array containing those elements decides the maximally possible attitude
+    max_min_atts[1] = np.sum(C[rowmax[0]])
+    rowmin = np.where(C < 0)
+    max_min_atts[0] = np.sum(C[rowmin[0]])
+
+    return max_min_atts
 
 def calc_min_max_atts(C):
     """

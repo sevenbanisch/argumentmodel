@@ -95,8 +95,8 @@ def SystematicParameterAnalysis(ß_info, M_steps, no_of_simulations, N, base_ite
     ß_steps = ß_info[2]
 
     # the three is because the variance is measured at three different points of the simulation.
-    results_red = np.empty((ß_steps, M_steps, no_of_simulations, base_iterations))
-    results_exp = np.empty((ß_steps, M_steps, no_of_simulations, base_iterations))
+    results_red = np.empty((ß_steps, M_steps, no_of_simulations, base_iterations, 16))
+    results_exp = np.empty((ß_steps, M_steps, no_of_simulations, base_iterations, 16))
 
     for base_iteration in range(base_iterations):
 
@@ -105,7 +105,7 @@ def SystematicParameterAnalysis(ß_info, M_steps, no_of_simulations, N, base_ite
 
         for ß_step in range(ß_steps):
 
-            ß = np.round((ß_step/ß_steps) * (ß_info[1] - ß_info[0]),2)
+            ß = ß_info[0] + np.round((ß_step/ß_steps) * (ß_info[1] - ß_info[0]),2)
 
             for M_step in range(M_steps):
 
@@ -117,13 +117,28 @@ def SystematicParameterAnalysis(ß_info, M_steps, no_of_simulations, N, base_ite
 
                 for sim in range(no_of_simulations):
                     #print(f"T:{T}, N:{N}, ß:{ß}, M:{M}, C:{C}")
-                    one_run_red = explicit_model(M=M, N=N, T=T, ß=ß, C=C)
+                    one_run_red = reduced_model(M=M, N=N, T=T, ß=ß, C=C)
                     one_run_exp = explicit_model(M=M, N=N, T=T, ß=ß, C=C)
 
-                    results_red[ß_step, M_step, sim, base_iteration] = np.var(one_run_red[:, -1])
-                    results_exp[ß_step, M_step, sim, base_iteration] = np.var(one_run_exp[:, -1])
+                    vars_red = np_var_axis0(one_run_red[:, int(T/16)-1::int(T/16)])
+                    vars_exp = np_var_axis0(one_run_exp[:, int(T/16)-1::int(T/16)])
+
+                    results_red[ß_step, M_step, sim, base_iteration, :] = vars_red
+                    results_exp[ß_step, M_step, sim, base_iteration, :] = vars_exp
+
+                    #results_red[ß_step, M_step, sim, base_iteration] = np.var(one_run_red[:, -1])
+                    #results_exp[ß_step, M_step, sim, base_iteration] = np.var(one_run_exp[:, -1])
 
     return results_red, results_exp
+
+@jit(nopython=True, fastmath=True)
+def np_var_axis0(x):
+    """Numba compatible version of np.any(x, axis=0)."""
+    out = np.zeros((x.shape[1],))
+    for i in range(x.shape[1]):
+        out[i,] = np.var(x[:, i])
+    return out
+
 
 @jit(nopython=True, fastmath=True)
 def create_connection_array_symmetrical(no_of_arguments, normalised):

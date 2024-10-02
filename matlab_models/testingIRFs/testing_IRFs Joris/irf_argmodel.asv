@@ -14,12 +14,12 @@ else
     cnew = 1;
 end
 
-
-dcoh = (2*arg-1) * V(kx) * M * oOld;
+if cnew == 1
+dcoh = (2*arg-1) * V(kx) * oOld;
 % why is there a exp(beta*dcoh) above the denominator as well?
 pAdopt = exp(beta * dcoh) / (1 + exp(beta * dcoh));
 % shouldn't this only be 1?
-%pAdopt = 1 / (1 + exp(-beta * dcoh));
+%pAdopt = 1 / (1 + exp(beta * dcoh));
 
 if(rand < pAdopt)
     bi(kx)=arg;

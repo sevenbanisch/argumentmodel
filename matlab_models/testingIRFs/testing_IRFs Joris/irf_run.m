@@ -1,9 +1,9 @@
 
-if 0
+if 1
     % set parameters
-    K = 6;
+    K = 8;
     M = K/2;
-    beta = 0;
+    beta = 2;
     
     % Create normalized connection matrix
     V = zeros(K,1);
@@ -25,7 +25,7 @@ if 0
             
             % returns error in the expected opinion change compared to
             % original argument model
-            [error, oi, oj] = irf_belief_comparison(bi, bj, V, beta, 10000);
+            [error, oi, oj] = irf_belief_comparison(bi, bj, V, beta, 1000);
             
             k = (row_i-1)*2^K + row_j;
             % get oi
@@ -37,34 +37,35 @@ if 0
         end
     end
 end
-
-% create a 3d plot between oi, oj, and the error. shows the mean error and
-% its confidence interval
-figure
-hold on
-% iterate over all possible opinion pairs
-for oi = unique(comb_result(:,1)).'
-    for oj = unique(comb_result(:,2)).'
-           
-        % get all indexes corresponding to the opinion pair
-        idx = comb_result(:,1)==oi & comb_result(:,2)==oj;
-
-        z_error = comb_result(idx,3);
-        mean_z = mean(z_error);
-        lb_confidence = mean_z - 1.96 * (std(z_error)/size(z_error,1));
-        ub_confidence = mean_z + 1.96 * (std(z_error)/size(z_error,1));
-
-        plot3([oi;oi], [oj;oj], [lb_confidence;ub_confidence], '-b');
-        scatter3(oi, oj, mean(z_error), 100,'red','square', 'filled');
-        
+   
+if 0
+    % create a 3d plot between oi, oj, and the error. shows the mean error and
+    % its confidence interval
+    figure
+    hold on
+    % iterate over all possible opinion pairs
+    for oi = unique(comb_result(:,1)).'
+        for oj = unique(comb_result(:,2)).'
+               
+            % get all indexes corresponding to the opinion pair
+            idx = comb_result(:,1)==oi & comb_result(:,2)==oj;
+    
+            z_error = comb_result(idx,3);
+            mean_z = mean(z_error);
+            lb_confidence = mean_z - 1.96 * (std(z_error)/size(z_error,1));
+            ub_confidence = mean_z + 1.96 * (std(z_error)/size(z_error,1));
+    
+            plot3([oi;oi], [oj;oj], [lb_confidence;ub_confidence], '-b');
+            scatter3(oi, oj, mean(z_error), 100,'red','square', 'filled');
+            
+        end
     end
+    xlabel("oi");
+    ylabel("oj");
+    zlabel("mean error in expected opinion change");
+    title("Mean error and confidence intervals in expected opinion change");
+    hold off
 end
-xlabel("oi");
-ylabel("oj");
-zlabel("mean error in expected opinion change");
-title("Mean error and confidence intervals in expected opinion change");
-hold off
-
 % create two heatmaps, first between oi, oj, and the mean error, second
 % between oi, oj and the variance of the error
 figure

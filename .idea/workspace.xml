@@ -5,14 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e2e1a61f-8cfa-4242-abf9-cc6fabdbebee" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matlab_models/script_max_variance.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab_models/script_max_variance.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matlab_models/script_simdata.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab_models/script_simdata.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulation_argument_model/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_argument_model/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matlab_models/testingIRFs/irf_argmodel.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab_models/testingIRFs/irf_argmodel.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matlab_models/testingIRFs/irf_script.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab_models/testingIRFs/irf_script.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matlab_models/testingIRFs/testing_IRFs Joris/irf_argmodel.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab_models/testingIRFs/testing_IRFs Joris/irf_argmodel.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matlab_models/testingIRFs/testing_IRFs Joris/irf_run.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab_models/testingIRFs/testing_IRFs Joris/irf_run.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation_argument_model/Analysis/Analysis_Variance_Slope.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_argument_model/Analysis/Analysis_Variance_Slope.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation_argument_model/Analysis/Analysis_convergence_times.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_argument_model/Analysis/Analysis_convergence_times.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation_argument_model/Analysis/Analysis_max_variance.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_argument_model/Analysis/Analysis_max_variance.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulation_argument_model/Runtime_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_argument_model/Runtime_test.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulation_argument_model/SingleRun_normal_vs_reduced.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_argument_model/SingleRun_normal_vs_reduced.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulation_argument_model/model_code/fastModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_argument_model/model_code/fastModel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation_argument_model/model_code/utilities_visuals.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_argument_model/model_code/utilities_visuals.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,16 +44,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/wesse/Documents/GitHub/bundestagsreden&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/wesse/Desktop"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
