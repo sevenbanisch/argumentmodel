@@ -9,7 +9,7 @@
 % visualize: toggle on and off the visualization of the model outcome
 
 
-function [A_t] = ReducedArgumentModel(steps,N,M,beta,pN,visualize)
+function [A_t] = ReducedArgumentModel(steps,N,M,beta,pN,ic_mode,visualize)
 
 
 % 1. Model Parameters
@@ -21,9 +21,19 @@ V(M+1:2*M) = 1/M;
 
 % 2. Initial Conditions
 
-% 2.1 Random
-args = randi(2,N,2*M)-1;
-A = args*V;
+% 2.1 Random Arguments
+
+if(ic_mode == 1)
+    % uniformly at random
+    A = 2*(rand(N,1)-0.5);
+    %A(1:N/2,1) = -1*(rand(N/2,1));
+    %A(N/2+1:N,1) = 1*(rand(N/2,1));
+else
+    % as in the argument model
+    args = randi(2,N,2*M)-1;
+    A = args*V;
+
+end
 %hist(A,20)
 
 % 2.2 Polarized
@@ -31,11 +41,10 @@ A = args*V;
 %A(N/2+1:N) = -1;
 
 % 2.3 For mean field comparison
-A(1:N/2) = 0.1;
-A(N/2+1:N) = -0.1;
+%A(1:N/2) = 0.1;
+%A(N/2+1:N) = -0.1;
 
 
-%A = rand(N,1); 
 
 % 3. Observables
 
@@ -44,7 +53,7 @@ A_t(:,1)=A;
 
 % 4. Simulation Loop 
 
-for step = 1:steps
+for step = 2:steps
 
     % !! runtime optimization
 

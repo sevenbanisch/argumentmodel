@@ -56,30 +56,33 @@ if(0)
 % pN = 0;
 
 
-% fifth parameter set (Figure 1, basic bifurcation)
-samplesB = 80;
-samplesIN = 100;
+% % fifth parameter set (Figure: basic bifurcation)
+% samplesB = 80;
+% samplesIN = 100;
+% 
+% N = 1000; 
+% 
+% M = 4;
+% pN = 0;
+% 
+% bMin = 0;
+% bMax = 8;
+% 
+% basesteps = 1000;
+% steps = M * basesteps;
+% 
+% T = M * 100; % just to not store for all times
+% OBSperiod = 25; % take temporal average over last 25 % of the runs
 
-N = 1000; 
 
-M = 4;
-pN = 0;
-
-bMin = 0;
-bMax = 8;
-
-basesteps = 1000;
-steps = M * basesteps;
-
-T = M * 100; % just to not store for all times
-OBSperiod = 25; % take temporal average over last 25 % of the runs
-
-
-% sixth parameter set (Figure 1, insets)
+% sixth parameter set (Figure: runtime)
 samplesB = 60;
-samplesIN = 100;
+samplesIN = 1000;
 
-N = 1000; 
+%samplesB = 10;
+%samplesIN = 3;
+
+N = 100; 
 
 M = 4;
 pN = 0;
@@ -88,33 +91,36 @@ bMin = 2;
 bMax = 8;
 
 basesteps = 1000;
-steps = M * basesteps * 4; % 16000 steps
+steps = M * basesteps * 16; % for N = 1000, 16000 is ok. 64000 steps is toooo much!
 
 T = M * 100; % just to not store for all times
 OBSperiod = 25; % take temporal average over last 25 % of the runs
 
 
-SIMDATA = zeros(samplesIN,samplesB+1,steps/T);
-OBS01 = zeros(samplesIN,samplesB+1);
-BETA = zeros(1,samplesB+1);
+rmSIMDATA = zeros(samplesIN,samplesB+1,steps/T);
+rmOBS01 = zeros(samplesIN,samplesB+1);
+rmBETA = zeros(1,samplesB+1);
+
+emSIMDATA = zeros(samplesIN,samplesB+1,steps/T);
+emOBS01 = zeros(samplesIN,samplesB+1);
+emBETA = zeros(1,samplesB+1);
 
 parfor sB = 0:samplesB
     beta = bMin + (bMax-bMin)*sB/samplesB
-    BETA(1,sB+1) = beta;
+    rmBETA(1,sB+1) = beta;
+    emBETA(1,sB+1) = beta;
     for sIN = 1:samplesIN
         
-        %A_t = NormalizedArgumentModel(steps,N,M,beta,pN,0);
+        A_t = NormalizedArgumentModel(steps,N,M,beta,pN,0);
+
+        emSIMDATA(sIN,sB+1,:) = var(A_t(:,T:T:steps),1);
+        emOBS01(sIN,sB+1) = mean(var(A_t(:,steps-steps/OBSperiod:steps),1));        
+        
         A_t = ReducedArgumentModel(steps,N,M,beta,pN,0);
-         
-        %SIMDATA(sIN,sB+1,:) = mean(A_t(:,T:T:steps));
 
-        % first version with normalization by N
-        SIMDATA(sIN,sB+1,:) = var(A_t(:,T:T:steps),1);
-        OBS01(sIN,sB+1) = mean(var(A_t(:,steps-steps/OBSperiod:steps),1));
-
-        % default version with normalization by N-1
-        %SIMDATA(sIN,sB+1,:) = var(A_t(:,T:T:steps));
-               
+        % normalization by N
+        rmSIMDATA(sIN,sB+1,:) = var(A_t(:,T:T:steps),1);
+        rmOBS01(sIN,sB+1) = mean(var(A_t(:,steps-steps/OBSperiod:steps),1));
 
         fprintf('.')
     end
@@ -129,7 +135,7 @@ end % if 1. Sim Data
 if(0)
 figure
 alpha_value = 0.1;
-scatter(BETA,OBS01,'o','MarkerEdgeColor',[0.2 0.5450 0.7330],...
+scatter(rmBETA,rmOBS01,'o','MarkerEdgeColor',[0.2 0.5450 0.7330],...
                        'MarkerFaceColor',[0.2 0.5450 0.7330],...
                        'MarkerFaceAlpha', alpha_value,...
                        'MarkerEdgeAlpha', alpha_value);
@@ -144,40 +150,80 @@ end % if 2.Scatter plot
 %% 2.2 Inset
 % 
 
-if(1)
+if(0)
 
-rmSIMDATA=SIMDATA;
-rmBETA = BETA;
+% emSIMDATA=SIMDATA;
+% emBETA = BETA;
+% rmBETA = BETA;
+
+varthreshh=0.5;
 
 figure
+subplot(1,2,1)
 alpha_value = 0.1;
-
-CR = emSIMDATA(:,:,steps/T) > 0.2; % 16000 steps
-plot(emBETA,mean(CR))
 hold on
-CR = emSIMDATA(:,:,3) > 0.2; % 1200 steps
-plot(emBETA,mean(CR))
 
-CR = emSIMDATA(:,:,10) > 0.2; % 4000 steps
-plot(emBETA,mean(CR))
+ CR = emSIMDATA(:,:,steps/T) > varthreshh; % 16000 steps
+ plot(emBETA,mean(CR))
+ 
+ CR = emSIMDATA(:,:,steps/(2*T)) > varthreshh; % 1200 steps
+ plot(emBETA,mean(CR))
+ 
+ CR = emSIMDATA(:,:,steps/(4*T)) > varthreshh; % 4000 steps
+ plot(emBETA,mean(CR))
 
+ CR = emSIMDATA(:,:,steps/(8*T)) > varthreshh; % 4000 steps
+ plot(emBETA,mean(CR))
+  
+ CR = emSIMDATA(:,:,steps/(16*T)) > varthreshh; % 4000 steps
+ plot(emBETA,mean(CR))
+steps/(32*T)
+ CR = emSIMDATA(:,:,steps/(32*T)) > varthreshh; % 4000 steps
+ plot(emBETA,mean(CR))
 
-CR = rmSIMDATA(:,:,steps/T) > 0.2; % 16000 steps
-plot(rmBETA,mean(CR))
+ CR = emSIMDATA(:,:,2) > varthreshh; % 4000 steps
+ plot(emBETA,mean(CR),'--')
 
-CR = rmSIMDATA(:,:,3) > 0.2; % 1200 steps
-plot(rmBETA,mean(CR))
-
-CR = rmSIMDATA(:,:,10) > 0.2; % 4000 steps
-plot(rmBETA,mean(CR))
-    
     xlabel('\beta', 'FontSize', 20);
     ylabel('polarization probability', 'FontSize', 20);
     set(gca,'FontSize',20)
     xlim([2.5,6])
     grid on;
 
-hold off
+ hold off
+ % ---------
+
+ subplot(1,2,2)
+ hold on
+
+    CR = rmSIMDATA(:,:,steps/T) > varthreshh; % 16000 steps
+    plot(rmBETA,mean(CR))
+    
+    CR = rmSIMDATA(:,:,steps/(2*T)) > varthreshh; % 1200 steps
+    plot(rmBETA,mean(CR))
+    % 
+    CR = rmSIMDATA(:,:,steps/(4*T)) > varthreshh; % 1200 steps
+    plot(rmBETA,mean(CR))
+    % 
+    CR = rmSIMDATA(:,:,steps/(8*T)) > varthreshh; % 4000 steps
+    plot(rmBETA,mean(CR))
+    
+    CR = rmSIMDATA(:,:,steps/(16*T)) > varthreshh; % 1200 steps
+    plot(rmBETA,mean(CR))
+    % 
+    CR = rmSIMDATA(:,:,steps/(32*T)) > varthreshh; % 4000 steps
+    plot(rmBETA,mean(CR))
+    
+    CR = rmSIMDATA(:,:,2) > varthreshh; % 800 steps
+    plot(rmBETA,mean(CR))
+    
+        xlabel('\beta', 'FontSize', 20);
+        ylabel('polarization probability', 'FontSize', 20);
+        set(gca,'FontSize',20)
+        xlim([2.5,6])
+        grid on;
+    
+    hold off
 
 end % if 2.Scatter plot
 

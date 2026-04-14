@@ -1,18 +1,11 @@
-function [oA,oB,colors] = testoninitialconditions(N,M,T,Samples,pInter,beta,mode,visualize)
-
-%N = 100;
-%T = 1000;
-%samples = 1000;
-%p = 1/2;
+function [oA,oB,colors] = ToIC_groupsizes(N,M,T,Samples,beta,mode,visualize)
 
 if(mode == 1)
     ICs = 2*(rand(Samples,N)-0.5);  % uniformly in [-1,1]
 else
-    %M = 4;
     V = zeros(2*M,1);
     V(1:M) = -1/M;
-    V(M+1:2*M) = 1/M;
-    
+    V(M+1:2*M) = 1/M;  
     
     ICs=zeros(Samples,N);
     for i = 1:Samples
@@ -45,19 +38,17 @@ end
 %     %sum(ICA(s,:))
 % end
 
-
 % Compute mean opinion (wrong version)
 %oA = mean(ICs.*ICA,2);
 %oB = mean(ICs.*ICB,2);
 
 % Compute means using sum and count
-%oA = sum(ICs .* ICA, 2) ./ sum(ICA, 2); % Mean of positive values
-%oB = sum(ICs .* ICB, 2) ./ sum(ICB, 2); % Mean of negative values
+oA = sum(ICs .* ICA, 2) ./ sum(ICA, 2); % Mean of positive values
+oB = sum(ICs .* ICB, 2) ./ sum(ICB, 2); % Mean of negative values
 
-for i = 1:Samples
-    oA(i) = mean(ICs(i, ICs(i, :) < 0));
-    oB(i) = mean(ICs(i, ICs(i, :) > 0));
-end
+% group sizes
+sA = mean(ICA,2);
+sB = mean(ICB,2);
 
 % rMat = rand(samples,N);
 % ICA =  rMat < 0.5;
@@ -68,15 +59,16 @@ end
 % convergence test
 colors = zeros(Samples,1)+0.05;
 if(1)
-    %offset = 1/10000;
+    %offset = 0;%1/10000;
     for s = 1:Samples
         oAt = oA(s);
         oBt = oB(s);
+
         for t = 1:T
-            dA = (1-pInter)*IRF(oAt,oAt,beta,M) + pInter * IRF(oAt,oBt,beta,M);
-            dB = (1-pInter)*IRF(oBt,oBt,beta,M) + pInter * IRF(oBt,oAt,beta,M);
-            oAt = oAt + dA;% + offset*(rand - 0.5);
-            oBt = oBt + dB;% + offset*(rand - 0.5);
+            dA = sA(s)*IRF(oAt,oAt,beta,M) + sB(s) * IRF(oAt,oBt,beta,M);
+            dB = sB(s)*IRF(oBt,oBt,beta,M) + sA(s) * IRF(oBt,oAt,beta,M);
+            oAt = oAt + dA; %+ offset*(rand - 0.5);
+            oBt = oBt + dB; %+ offset*(rand - 0.5);
         end
         colors(s)=var([oAt,oBt])/2;
 
@@ -85,7 +77,7 @@ end
 
 if(visualize)
 %figure
-scatter(oA,oB,5, colors, 'filled') % 50 is the marker size
+scatter(oA,oB,15, colors, 'filled') % 50 is the marker size
     colormap('jet'); % Set the colormap (optional)
     colorbar; % Show colorbar (optional)
     xlabel('opinion group A', 'FontSize', 20);

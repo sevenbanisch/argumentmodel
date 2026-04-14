@@ -1,8 +1,30 @@
 
 %% just plotting
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%% OLD STUFF
+
+%convR = SIMDATA <= 0.01;
+%plot(BETA,mean(convR(:,:,100)));
+
+
 %% variance after T steps
-if(1)
+if(0)
 
     figure
     time = 10;  % 
