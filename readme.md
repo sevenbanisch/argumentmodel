@@ -10,13 +10,23 @@ This repository contains code and data for the paper:
 
 We study a cognitively grounded model of opinion dynamics based on argument exchange with confirmation bias. Analyses have been performed in MatLab, Mathematica and Python. 
 
-### matlab_models
-The repository includes:
+### `matlab/` includes:
 
 - The original agent-based model (PAT), following [Banisch and Shamon (2025)](https://doi.org/10.1177/00491241231186658)
 - The reduced model based on a derived influence–response function (IRF)
-- The mean-field (MF) model and analysis of the system
-- Scripts to reproduce the figures in the paper
+- Several mean-field (MF) models and analysis of the system
+- Scripts to reproduce the main figures in the paper
+
+### `mathematica/` includes:
+
+- The derivation of the influence response function
+- Mean-field model and bifurcation analysis
+
+### `python/` includes:
+
+- The original agent-based model (PAT), following [Banisch and Shamon (2025)](https://doi.org/10.1177/00491241231186658)
+- The reduced model based on a derived influence–response function (IRF)
+- Notebooks for their comparison (in the SI of the paper)
 
 ## Contact
 
